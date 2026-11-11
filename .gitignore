@@ -1,0 +1,25 @@
+
+# Dependencies
+node_modules/
+
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Uploaded user files
+backend/uploads/*
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Build output
+dist/
+build/
+coverage/

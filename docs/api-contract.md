@@ -4090,3 +4090,2161 @@ Test status: NOT STARTED
 
 The Portfolio API Contract is ready for team review,
 but must not be treated as production-ready.
+
+---
+
+## 19. Admin Access and Dashboard API
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Base Path: /api/v1/admin
+- Authentication: Server-side Session
+- Authorization: Admin Only
+- Status: DRAFT
+
+### 19.1 Get Admin Dashboard Summary
+
+- Method: GET
+- Path: /api/v1/admin/dashboard/summary
+- Authentication Required: Yes
+- Required Role: admin
+
+#### Request
+
+- No JSON body required.
+- Browser sends the session cookie.
+- The backend verifies the current user's role.
+- No userId or role is accepted from the client.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Admin dashboard summary retrieved.",
+      "data": {
+        "activeUsers": 1280,
+        "visiblePosts": 3450,
+        "pendingReports": 18,
+        "publicPortfolios": 420,
+        "generatedAt": "2026-11-14T12:00:00Z"
+      }
+    }
+
+These numbers are example values only.
+
+#### Counting Rules
+
+activeUsers:
+- Count users where is_active = TRUE.
+
+visiblePosts:
+- Count posts where moderation_status = 'visible'.
+- Exclude posts where deleted_at is not NULL.
+- Exclude posts belonging to inactive users.
+
+pendingReports:
+- Count post_reports where status = 'pending'.
+- This count represents the review queue.
+
+publicPortfolios:
+- Count portfolios where visibility = 'public'.
+- Exclude soft-deleted portfolios.
+- Exclude portfolios belonging to inactive users.
+
+#### Validation and Security
+
+- requireAuth must run before requireAdmin.
+- Validate the authenticated session.
+- Check users.is_active.
+- Check the current users.role.
+- Validate users.session_version.
+- Never trust role values from the frontend.
+- Never expose password hashes or session data.
+- Use parameterized SQL queries.
+- Prevent public caching of Admin responses.
+- Set Cache-Control: no-store.
+- Do not expose unnecessary user details.
+
+#### Errors
+
+- 401: Unauthenticated or invalid session
+- 403: Authenticated but not authorized
+- 500: Internal server error
+
+#### Error Response Example: 403
+
+    {
+      "success": false,
+      "message": "You do not have permission to access this resource.",
+      "errors": [
+        {
+          "code": "ADMIN_ACCESS_DENIED"
+        }
+      ]
+    }
+
+---
+
+### 19.2 Admin Authentication Rules
+
+- Admin uses the normal UniGO Login API.
+- A separate Admin Login is not required.
+- The server creates an authenticated session.
+- The session identifies the authenticated user.
+- Admin authorization uses trusted server data.
+- Users.role must be checked on protected requests.
+- Inactive accounts cannot access Admin endpoints.
+- Public registration always creates role = 'user'.
+- Public registration cannot assign admin role.
+- Role changes require a protected process.
+- Admin access must not depend on URL secrecy.
+
+### 19.3 Admin Middleware Design
+
+Required middleware:
+- requireAuth
+- requireAdmin
+
+#### requireAuth
+
+Responsibilities:
+- Read the authenticated server-side session.
+- Reject missing or expired sessions.
+- Identify the user from the session.
+- Load or validate trusted account information.
+- Reject inactive accounts.
+- Verify session_version when enabled.
+
+Expected failures:
+- 401 Unauthorized
+
+#### requireAdmin
+
+Responsibilities:
+- Run after requireAuth.
+- Check the current trusted user role.
+- Allow only role = 'admin'.
+- Reject normal user accounts.
+- Reject users whose privileges were revoked.
+- Never trust role from request body or query data.
+
+Expected failures:
+- 403 Forbidden
+
+#### Middleware Order
+
+1. Session middleware
+2. requireAuth
+3. requireAdmin
+4. Admin route handler
+
+Security principle:
+- Deny access by default.
+- Check authorization on every protected request.
+- Never rely only on frontend navigation controls.
+
+### 19.4 Admin Session Security
+
+- Use HttpOnly session cookies.
+- Use Secure cookies in HTTPS production.
+- Apply an appropriate SameSite policy.
+- Protect state-changing requests against CSRF.
+- Regenerate session identifiers after Login.
+- Enforce idle and absolute session expiration.
+- Revalidate active account status.
+- Revalidate current Admin authorization.
+- Revoke sessions after critical role changes.
+- Do not log raw session cookies or session IDs.
+- Never expose SESSION_SECRET.
+
+### 19.5 Database Dependencies
+
+Required tables:
+- users
+- sessions
+- posts
+- post_reports
+- portfolios
+
+Related tables for later Admin operations:
+- admin_audit_logs
+
+Important fields:
+- users.id
+- users.role
+- users.is_active
+- users.session_version
+- posts.moderation_status
+- posts.deleted_at
+- post_reports.status
+- portfolios.visibility
+- portfolios.deleted_at
+
+Rules:
+- Use the actual approved MySQL schema.
+- Do not create duplicate user tables.
+- Use authorized database connections.
+- Return only aggregated Dashboard data.
+- Avoid returning private user information.
+- Review query performance during implementation.
+
+### 19.6 Frontend Integration Notes
+
+Admin frontend should:
+- Use the existing Login system.
+- Call GET /auth/me to obtain current user context.
+- Show Admin navigation only to authorized users.
+- Call GET /admin/dashboard/summary.
+- Include authenticated session cookies.
+- Handle 401 by redirecting to Login.
+- Handle 403 by showing Access Denied.
+- Never trust frontend role checks as security.
+- Do not store session tokens in localStorage.
+- Do not expose private information in errors.
+
+### 19.7 Future Security Test Cases
+
+Required tests:
+- Unauthenticated request returns 401.
+- Normal user request returns 403.
+- Active Admin request returns 200.
+- Inactive Admin request is rejected.
+- Expired session is rejected.
+- Revoked session is rejected.
+- Role change takes effect on protected requests.
+- Client-supplied role cannot grant admin access.
+- Direct URL access cannot bypass authorization.
+- Dashboard data does not expose secrets.
+- Public caches cannot retain Admin responses.
+
+Test Status: NOT STARTED
+
+### 19.8 Pending Decisions
+
+- Admin account provisioning process
+- Final session and CSRF configuration
+- Admin frontend route structure
+- Administrative permission levels
+- Role change approval process
+- Dashboard refresh and cache policy
+- Final SQL queries and indexes
+- MySQL integration testing
+- Final security review
+
+---
+
+## 20. Admin Reports API
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Base Path: /api/v1/admin/reports
+- Authentication Required: Yes
+- Authorization: Admin Only
+- Status: DRAFT
+
+### 20.1 Get Admin Reports
+
+- Method: GET
+- Path: /api/v1/admin/reports
+- Required Role: admin
+
+#### Query Parameters
+
+- status: optional
+- limit: optional, default 20, maximum 50
+- cursor: optional opaque pagination cursor
+
+Allowed status values:
+- pending
+- dismissed
+- action_taken
+
+Example:
+GET /api/v1/admin/reports?status=pending&limit=20
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Reports retrieved successfully.",
+      "data": {
+        "reports": [
+          {
+            "id": "701",
+            "postId": "100",
+            "reason": "spam",
+            "status": "pending",
+            "createdAt": "2026-11-14T03:30:00Z",
+            "reviewedAt": null
+          }
+        ],
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+
+#### Rules
+
+- Run requireAuth before requireAdmin.
+- Reject unauthenticated requests.
+- Reject non-admin requests.
+- Return reports based on the requested status.
+- Return all statuses when no status filter exists.
+- Validate query parameters.
+- Sort by created_at DESC, id DESC.
+- Support stable cursor-based pagination.
+- Return only necessary summary fields.
+- Use parameterized SQL queries.
+- Set Cache-Control: no-store.
+- Do not expose report data publicly.
+
+#### Errors
+
+- 400: Invalid query parameters
+- 401: Unauthenticated
+- 403: Admin permission required
+- 500: Internal server error
+
+---
+
+### 20.2 Get Admin Report Details
+
+- Method: GET
+- Path: /api/v1/admin/reports/:reportId
+- Required Role: admin
+
+#### Path Parameter
+
+- reportId: valid BIGINT UNSIGNED identifier
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Report details retrieved successfully.",
+      "data": {
+        "report": {
+          "id": "701",
+          "postId": "100",
+          "reporter": {
+            "id": "2",
+            "username": "student02"
+          },
+          "reason": "spam",
+          "description": "Repeated advertisements.",
+          "status": "pending",
+          "adminNote": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "createdAt": "2026-11-14T03:30:00Z"
+        }
+      }
+    }
+
+#### Rules
+
+- Require an authenticated Admin session.
+- Verify the current role using trusted data.
+- Find the report using reportId.
+- Return 404 when the report does not exist.
+- Return only fields needed for moderation.
+- Reporter identity is accessible only to
+  authorized admins who need that information.
+- Do not reveal reporter identity to post authors.
+- Validate reportId before database access.
+- The reported post may be hidden or deleted.
+- A deleted post must not prevent viewing
+  the retained report record.
+- Post details require their own visibility
+  and authorization checks.
+- Do not include password or session data.
+- Set Cache-Control: no-store.
+
+#### Errors
+
+- 400: Invalid reportId
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: Report not found
+- 500: Internal server error
+
+---
+
+### 20.3 Dismiss Admin Report
+
+- Method: POST
+- Path: /api/v1/admin/reports/:reportId/dismiss
+- Required Role: admin
+- Content-Type: application/json
+
+#### Request Body
+
+    {
+      "adminNote": "No rule violation found."
+    }
+
+#### Validation Rules
+
+- Authentication is required.
+- Admin authorization is required.
+- reportId must be valid.
+- The report must exist.
+- The report status must be pending.
+- adminNote is required for accountability.
+- Reject empty or whitespace-only adminNote.
+- Proposed adminNote limit: 1000 characters.
+- Reject unknown or protected fields.
+- Do not accept reviewedBy from the client.
+- Do not accept status from the client.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Report dismissed successfully.",
+      "data": {
+        "report": {
+          "id": "701",
+          "postId": "100",
+          "status": "dismissed",
+          "reviewedBy": "1",
+          "reviewedAt": "2026-11-14T04:00:00Z"
+        }
+      }
+    }
+
+#### Dismiss Rules
+
+- Obtain the Admin ID from the session.
+- Verify current Admin permissions.
+- Begin a database transaction.
+- Lock the report row for review.
+- Confirm that status is still pending.
+- Change status to dismissed.
+- Set reviewed_by to the current Admin ID.
+- Set reviewed_at to the current UTC time.
+- Save admin_note after validation.
+- Insert a related admin_audit_logs record.
+- Commit only when both writes succeed.
+- Roll back if either write fails.
+- Do not modify post visibility.
+- Do not allow regular users to dismiss reports.
+- Protect the request against CSRF.
+
+#### Audit Log
+
+- action: report.dismiss
+- target_type: report
+- target_id: reportId
+- actor_user_id: current Admin ID
+- result: success
+- request_id: server-generated request ID
+
+#### Concurrent Review Rules
+
+- Only one successful terminal transition
+  is allowed from the pending state.
+- Use row locking or a verified equivalent.
+- Reject conflicting review attempts with 409.
+- Do not silently overwrite earlier reviews.
+- Finalized reports cannot be dismissed again.
+- Do not automatically reopen finalized reports.
+
+#### Errors
+
+- 400: Invalid reportId or request
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: Report not found
+- 409: Report already reviewed
+- 422: Validation failed
+- 500: Internal server error
+
+---
+
+### 20.4 Report Review State Rules
+
+Allowed statuses:
+- pending
+- dismissed
+- action_taken
+
+Allowed transitions in the initial version:
+
+- pending -> dismissed
+- pending -> action_taken
+
+Disallowed transitions:
+
+- dismissed -> pending
+- action_taken -> pending
+- dismissed -> action_taken
+- action_taken -> dismissed
+
+Notes:
+- A finalized report is not reopened
+  through the initial Admin API.
+- Exceptional corrections require a separate
+  audited administrative procedure.
+- These transition rules must be enforced
+  by the backend.
+- The database stores the resulting status.
+
+---
+
+### 20.5 Database Dependencies
+
+Required tables:
+- users
+- posts
+- post_reports
+- admin_audit_logs
+
+Foreign key relationships:
+- post_reports.post_id references posts.id.
+- post_reports.reporter_id references users.id.
+- post_reports.reviewed_by references users.id.
+- admin_audit_logs.actor_user_id references users.id.
+
+Report Constraints:
+- PRIMARY KEY (id)
+- UNIQUE (post_id, reporter_id)
+
+Proposed Indexes:
+- INDEX (status, created_at, id)
+- INDEX (reporter_id)
+
+Review the indexes against actual SQL queries.
+
+### 20.6 Admin Security Rules
+
+- Run requireAuth and requireAdmin.
+- Check current account status.
+- Validate session_version.
+- Never trust role from request input.
+- Never trust actor_user_id from the frontend.
+- Do not expose reporter identity publicly.
+- Restrict access to admin notes.
+- Apply CSRF protection to write operations.
+- Set Cache-Control: no-store.
+- Use parameterized SQL queries.
+- Do not store secrets in audit metadata.
+- Validate all request inputs.
+- Use appropriate rate limiting.
+
+### 20.7 Admin Post Moderation Integration
+
+- This section handles listing, viewing,
+  and dismissing reports.
+- Taking action on a post will be designed
+  in the Admin Post Moderation API section.
+- Moderation may change posts.moderation_status.
+- Related pending reports may become action_taken
+  according to the final moderation policy.
+- Post moderation and report status changes
+  must be transactionally consistent.
+- Successful actions require audit records.
+- Do not create conflicting report decisions.
+
+### 20.8 Frontend Integration Notes
+
+Admin frontend should:
+- Call GET /admin/reports for the report queue.
+- Support filtering by report status.
+- Use pagination for large report lists.
+- Call GET /admin/reports/:reportId for details.
+- Show report reason and description.
+- Show current review status.
+- Display a Dismiss action only when pending.
+- Submit adminNote when dismissing a report.
+- Handle 401, 403, 404 and 409 responses.
+- Send authenticated cookies.
+- Include the agreed CSRF protection.
+- Do not expose private report information
+  in public-facing pages.
+
+### 20.9 Required Future Tests
+
+- Normal users cannot list Admin reports.
+- Unauthenticated requests return 401.
+- Normal users receive 403.
+- Authorized Admins can view reports.
+- Missing report returns 404.
+- Invalid status filter is rejected.
+- Pending report can be dismissed.
+- Dismissal stores reviewed_by correctly.
+- Dismissal stores reviewed_at correctly.
+- Dismissal writes a successful audit log.
+- A failed audit write rolls back dismissal.
+- Repeated dismissal does not overwrite review.
+- Concurrent review attempts cannot both win.
+- Dismissal does not hide the reported post.
+- Admin responses cannot be publicly cached.
+
+Test Status: NOT STARTED
+
+### 20.10 Pending Decisions
+
+- Final report retention policy
+- Admin permissions and access levels
+- Final audit metadata policy
+- Final report review workflow
+- Report queue pagination indexes
+- Post moderation integration
+- CSRF protection implementation
+- MySQL transaction testing
+- Final API approval
+
+---
+
+## 21. Admin Post Moderation API
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Base Path: /api/v1/admin
+- Authentication Required: Yes
+- Authorization: Admin Only
+- Status: DRAFT
+
+### 21.1 Get Admin Post Details
+
+- Method: GET
+- Path: /api/v1/admin/posts/:postId
+- Required Role: admin
+
+#### Path Parameter
+- postId: valid BIGINT UNSIGNED identifier.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Admin post details retrieved successfully.",
+      "data": {
+        "post": {
+          "id": "100",
+          "userId": "2",
+          "content": "Example reported post.",
+          "moderationStatus": "visible",
+          "deletedAt": null,
+          "createdAt": "2026-11-14T03:00:00Z",
+          "updatedAt": "2026-11-14T03:00:00Z"
+        }
+      }
+    }
+
+#### Rules
+- Run requireAuth and requireAdmin.
+- Verify the current Admin session.
+- Check the current Admin role in trusted data.
+- Validate postId before database access.
+- Allow authorized review of hidden posts.
+- Allow authorized review of retained soft-deleted posts.
+- Return only necessary moderation information.
+- Never expose passwords or session data.
+- Media access must follow authorization rules.
+- Set Cache-Control: no-store.
+- Use parameterized SQL queries.
+
+#### Errors
+- 400: Invalid postId
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: Post not found
+- 500: Internal server error
+
+---
+
+### 21.2 Hide Post
+
+- Method: POST
+- Path: /api/v1/admin/posts/:postId/hide
+- Required Role: admin
+- Content-Type: application/json
+
+#### Request Body
+
+    {
+      "reportId": "701",
+      "adminNote": "The post violates community rules."
+    }
+
+#### Request Fields
+- reportId: optional BIGINT string or null
+- adminNote: required string
+
+If reportId is null or omitted, the action is
+an independent administrative moderation action.
+
+#### Validation Rules
+- Authentication is required.
+- Admin authorization is required.
+- postId must be valid.
+- The post must exist.
+- The post must not be soft-deleted.
+- moderation_status must currently be visible.
+- adminNote must not be empty.
+- Proposed adminNote limit: 1000 characters.
+- Reject unknown and protected fields.
+- Do not accept adminId or role from the client.
+
+If reportId is provided:
+- The report must exist.
+- The report must reference this postId.
+- The report status must be pending.
+- Reject mismatched or finalized reports.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Post hidden successfully.",
+      "data": {
+        "post": {
+          "id": "100",
+          "moderationStatus": "hidden"
+        },
+        "report": {
+          "id": "701",
+          "status": "action_taken"
+        }
+      }
+    }
+
+When no reportId is provided:
+- Return report: null.
+
+#### Moderation Rules
+- Read the Admin ID from the authenticated session.
+- Validate current Admin permissions.
+- Begin a database transaction.
+- Lock the target post row.
+- Verify the post is visible and not deleted.
+- If reportId is provided, lock its report row.
+- Verify the report belongs to the target post.
+- Verify the report status is pending.
+- Update posts.moderation_status to hidden.
+- If linked, update report status to action_taken.
+- If linked, set reviewed_by to the Admin ID.
+- If linked, set reviewed_at to current UTC time.
+- If linked, save the validated adminNote.
+- Record the post.hide audit event.
+- If linked, record report.action_taken audit event.
+- Commit only when all database writes succeed.
+- Roll back when a required write fails.
+
+#### Other Pending Reports
+- Do not automatically finalize other reports.
+- Other pending reports remain pending.
+- Review them individually through Admin APIs.
+- Do not claim an unreviewed report was reviewed.
+
+#### Visibility Rules
+- Hide the post from public Feed responses.
+- Hide the post from public Post Details.
+- Hide it from hashtag search results.
+- Reject new Comments and Likes.
+- Do not physically delete the post.
+- Preserve existing Comments and Likes.
+- Preserve related Reports for review.
+- Do not alter posts.deleted_at.
+
+#### Audit Log
+- action: post.hide
+- target_type: post
+- target_id: postId
+- actor_user_id: current Admin ID
+- result: success
+
+For a linked report, also record:
+- action: report.action_taken
+- target_type: report
+- target_id: reportId
+- actor_user_id: current Admin ID
+- result: success
+
+Audit metadata must not contain secrets.
+
+#### Errors
+- 400: Invalid request
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: Post or linked report not found
+- 409: Post already hidden or deleted
+- 409: Linked report already reviewed
+- 422: Invalid moderation note
+- 500: Internal server error
+
+---
+
+### 21.3 Restore Hidden Post
+
+- Method: POST
+- Path: /api/v1/admin/posts/:postId/restore
+- Required Role: admin
+- Content-Type: application/json
+
+#### Request Body
+
+    {
+      "adminNote": "The moderation decision was reversed."
+    }
+
+#### Validation Rules
+- Authentication is required.
+- Admin authorization is required.
+- postId must be valid.
+- The post must exist.
+- The post must currently be hidden.
+- The post must not be soft-deleted.
+- adminNote is required.
+- Proposed adminNote limit: 1000 characters.
+- Reject unknown and protected fields.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Post restored successfully.",
+      "data": {
+        "post": {
+          "id": "100",
+          "moderationStatus": "visible"
+        }
+      }
+    }
+
+#### Restore Rules
+- Obtain Admin identity from the session.
+- Verify current Admin authorization.
+- Begin a database transaction.
+- Lock the target post row.
+- Verify the post is hidden.
+- Reject soft-deleted posts.
+- Change moderation_status to visible.
+- Insert the related post.restore audit record.
+- Commit only when both writes succeed.
+- Roll back if either operation fails.
+- Do not modify posts.deleted_at.
+- Do not restore author-deleted posts.
+- Do not automatically reopen finalized reports.
+- Keep previous audit records unchanged.
+- Protect the request against CSRF.
+
+#### Visibility After Restore
+- The post may appear in the public Feed again.
+- Normal account visibility rules still apply.
+- Posts from inactive users remain unavailable.
+- Existing comments and likes remain stored.
+- Only visible, non-deleted comments are public.
+
+#### Audit Log
+- action: post.restore
+- target_type: post
+- target_id: postId
+- actor_user_id: current Admin ID
+- result: success
+
+#### Errors
+- 400: Invalid request
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: Post not found
+- 409: Post is not hidden
+- 409: Post has been soft-deleted
+- 422: Invalid adminNote
+- 500: Internal server error
+
+---
+
+### 21.4 Resolve Report With Existing Action
+
+- Method: POST
+- Path: /api/v1/admin/reports/:reportId/action-taken
+- Required Role: admin
+- Content-Type: application/json
+
+#### Purpose
+Finalize a pending report when the related
+post has already been hidden by Admin.
+
+#### Request Body
+
+    {
+      "adminNote": "The reported post has already been hidden."
+    }
+
+#### Validation Rules
+- Authentication is required.
+- Admin authorization is required.
+- The report must exist.
+- The report must be pending.
+- The linked post must exist.
+- The linked post must currently be hidden.
+- adminNote is required and validated.
+- Reject client-supplied status or reviewedBy.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Report review completed successfully.",
+      "data": {
+        "report": {
+          "id": "702",
+          "postId": "100",
+          "status": "action_taken",
+          "reviewedBy": "1",
+          "reviewedAt": "2026-11-14T04:30:00Z"
+        }
+      }
+    }
+
+#### Review Rules
+- Verify current Admin privileges.
+- Begin a database transaction.
+- Lock the report row and verify pending status.
+- Confirm the post is already hidden.
+- Set report.status to action_taken.
+- Set reviewed_by to the current Admin ID.
+- Set reviewed_at to current UTC time.
+- Save the validated adminNote.
+- Insert a report.action_taken audit record.
+- Commit all related writes together.
+- Roll back when a required write fails.
+- Do not change the post visibility.
+- Do not modify other reports.
+- Reject duplicate or concurrent finalization.
+- Protect the request against CSRF.
+
+#### Errors
+- 400: Invalid reportId or request
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: Report or post not found
+- 409: Report already finalized
+- 409: Linked post is not hidden
+- 422: Validation failed
+- 500: Internal server error
+
+---
+
+### 21.5 Moderation State Rules
+
+Post moderation statuses:
+- visible
+- hidden
+
+Report review statuses:
+- pending
+- dismissed
+- action_taken
+
+Post transitions:
+- visible -> hidden
+- hidden -> visible
+
+Report transitions:
+- pending -> dismissed
+- pending -> action_taken
+
+Do not automatically reverse finalized reports.
+
+### 21.6 Authentication and Authorization
+
+- Every Admin endpoint requires authentication.
+- Every Admin endpoint requires Admin authorization.
+- Run requireAuth before requireAdmin.
+- Verify current users.role using trusted data.
+- Verify users.is_active.
+- Verify users.session_version.
+- Never trust Admin claims from request inputs.
+- Reject unauthorized requests with 403.
+- Reject unauthenticated requests with 401.
+- Apply CSRF protection to write operations.
+- Set Cache-Control: no-store.
+- Apply appropriate rate limits.
+
+### 21.7 Database Dependencies
+
+Required tables:
+- users
+- posts
+- post_reports
+- admin_audit_logs
+
+Relevant fields:
+- users.id
+- users.role
+- users.is_active
+- posts.id
+- posts.user_id
+- posts.moderation_status
+- posts.deleted_at
+- post_reports.id
+- post_reports.post_id
+- post_reports.status
+- post_reports.reviewed_by
+- post_reports.reviewed_at
+- post_reports.admin_note
+- admin_audit_logs.actor_user_id
+- admin_audit_logs.action
+- admin_audit_logs.target_type
+- admin_audit_logs.target_id
+
+Database Rules:
+- Use parameterized SQL queries.
+- Use transactions for moderation changes.
+- Lock rows or use verified concurrency controls.
+- Do not create duplicate moderation records.
+- Audit important changes.
+- Do not remove reports through moderation APIs.
+- Confirm schema fields before SQL implementation.
+
+### 21.8 Frontend Integration Notes
+
+Admin frontend should:
+- Use GET /admin/posts/:postId for review.
+- Use POST /admin/posts/:postId/hide.
+- Use POST /admin/posts/:postId/restore.
+- Use POST /admin/reports/:reportId/action-taken
+  for eligible pending reports.
+- Require an adminNote for write operations.
+- Send the session cookie.
+- Include the agreed CSRF protection.
+- Handle 401, 403, 404, 409 and 422 errors.
+- Display the latest moderation status.
+- Do not claim a report is reviewed before
+  the backend confirms success.
+- Never rely on hidden UI controls for security.
+
+### 21.9 Required Future Tests
+
+- Normal users cannot access Admin Post APIs.
+- Unauthenticated requests return 401.
+- Normal users receive 403.
+- Admin can inspect a hidden post.
+- Admin can hide a visible post.
+- Hidden posts disappear from public Feed.
+- Hidden posts cannot receive new comments.
+- Hidden posts cannot receive new likes.
+- Soft-deleted posts cannot be restored by Admin.
+- Hiding a post creates an audit record.
+- Linked pending report becomes action_taken.
+- Other reports remain pending.
+- Concurrent moderation requests are safe.
+- Failed audit writes roll back moderation.
+- Admin can restore a hidden post.
+- Restore does not reopen finalized reports.
+- A pending report for an already hidden post
+  can be reviewed and marked action_taken.
+- Invalid report-to-post relationships are rejected.
+- Direct URLs cannot bypass authorization.
+
+Test Status: NOT STARTED
+
+### 21.10 Pending Decisions
+
+- Final moderation policy
+- Admin permission levels
+- Moderation reason categories
+- Retention of removed content
+- Handling inactive author accounts
+- File access for hidden posts
+- CSRF implementation
+- Concurrent review implementation
+- Final MySQL constraints
+- Final API approval
+
+---
+
+## 22. Admin User Management API
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Base Path: /api/v1/admin/users
+- Authentication Required: Yes
+- Authorization: Admin Only
+- Status: DRAFT
+
+### 22.1 Get Admin Users
+
+- Method: GET
+- Path: /api/v1/admin/users
+- Required Role: admin
+
+#### Query Parameters
+
+- query: optional username search
+- status: optional, active or inactive
+- limit: optional, default 20, maximum 50
+- cursor: optional pagination cursor
+
+Example:
+GET /api/v1/admin/users?status=active&limit=20
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Users retrieved successfully.",
+      "data": {
+        "users": [
+          {
+            "id": "2",
+            "username": "student01",
+            "displayName": "Example Student",
+            "role": "user",
+            "isActive": true,
+            "createdAt": "2026-11-14T03:00:00Z"
+          }
+        ],
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+
+#### Rules
+
+- Run requireAuth before requireAdmin.
+- Validate the current Admin session.
+- Verify the current trusted Admin role.
+- Validate all query parameters.
+- Search using approved fields.
+- Use parameterized SQL queries.
+- Sort by created_at DESC, id DESC.
+- Support stable cursor pagination.
+- Return only necessary account fields.
+- Never return passwords or password hashes.
+- Never return session secrets or tokens.
+- Do not expose session_version.
+- Set Cache-Control: no-store.
+
+#### Errors
+
+- 400: Invalid query parameters
+- 401: Unauthenticated
+- 403: Admin permission required
+- 500: Internal server error
+
+---
+
+### 22.2 Get Admin User Details
+
+- Method: GET
+- Path: /api/v1/admin/users/:userId
+- Required Role: admin
+
+#### Path Parameter
+
+- userId: valid BIGINT UNSIGNED identifier
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "User details retrieved successfully.",
+      "data": {
+        "user": {
+          "id": "2",
+          "username": "student01",
+          "displayName": "Example Student",
+          "role": "user",
+          "isActive": true,
+          "createdAt": "2026-11-14T03:00:00Z"
+        }
+      }
+    }
+
+#### Rules
+
+- Authentication is required.
+- Admin authorization is required.
+- Verify userId is valid.
+- Return 404 when user does not exist.
+- Return only approved administrative fields.
+- Do not expose password hashes.
+- Do not expose reset tokens or session data.
+- Do not expose unnecessary personal data.
+- Sensitive fields require separate permission.
+- Set Cache-Control: no-store.
+- Use parameterized SQL queries.
+
+#### Errors
+
+- 400: Invalid userId
+- 401: Unauthenticated
+- 403: Admin permission required
+- 404: User not found
+- 500: Internal server error
+
+---
+
+### 22.3 Deactivate User
+
+- Method: POST
+- Path: /api/v1/admin/users/:userId/deactivate
+- Required Role: admin
+- Content-Type: application/json
+
+#### Request Body
+
+    {
+      "reasonCode": "policy_violation",
+      "adminNote": "Repeated community rule violations."
+    }
+
+#### Allowed Reason Codes
+
+- policy_violation
+- spam_abuse
+- security_concern
+- other
+
+#### Validation Rules
+
+- Authentication is required.
+- Admin authorization is required.
+- userId must be valid.
+- The target user must exist.
+- The target account must currently be active.
+- The target role must be user.
+- Admin cannot deactivate their own account.
+- Normal Admin cannot deactivate another Admin.
+- reasonCode is required and must be allowed.
+- adminNote is optional, maximum 500 characters.
+- Reject unknown or protected input fields.
+- Do not accept isActive or role from the client.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "User account deactivated successfully.",
+      "data": {
+        "user": {
+          "id": "2",
+          "username": "student01",
+          "isActive": false
+        }
+      }
+    }
+
+#### Deactivation Rules
+
+- Identify the Admin from the session.
+- Verify current Admin permissions.
+- Begin a database transaction.
+- Lock the target user row.
+- Confirm the target role is user.
+- Confirm the account is active.
+- Set users.is_active = FALSE.
+- Increment users.session_version.
+- Insert an admin_audit_logs record.
+- Commit only when all writes succeed.
+- Roll back if any required write fails.
+- Do not physically delete the user.
+- Do not delete posts or portfolios.
+- Reject protected APIs for inactive accounts.
+- Existing sessions become invalid when the
+  backend checks the new session_version.
+- Protect the request against CSRF.
+
+#### Audit Log
+
+- action: user.deactivate
+- target_type: user
+- target_id: target userId
+- actor_user_id: current Admin ID
+- result: success
+- metadata: approved reason code and safe note
+- request_id: server-generated request ID
+
+Do not store secrets in audit metadata.
+
+#### Errors
+
+- 400: Invalid request
+- 401: Unauthenticated
+- 403: Admin permission required
+- 403: Protected target account
+- 404: User not found
+- 409: Account already inactive
+- 422: Invalid reason
+- 500: Internal server error
+
+---
+
+### 22.4 Reactivate User
+
+- Method: POST
+- Path: /api/v1/admin/users/:userId/reactivate
+- Required Role: admin
+- Content-Type: application/json
+
+#### Request Body
+
+    {
+      "reasonCode": "review_cleared",
+      "adminNote": "Account review completed."
+    }
+
+#### Allowed Reason Codes
+
+- review_cleared
+- appeal_approved
+- other
+
+#### Validation Rules
+
+- Authentication is required.
+- Admin authorization is required.
+- The target user must exist.
+- The target role must be user.
+- The target account must currently be inactive.
+- The action must follow the agreed policy.
+- reasonCode is required.
+- adminNote is optional, maximum 500 characters.
+- Reject protected or unknown input fields.
+- Do not accept role or isActive from the client.
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "User account reactivated successfully.",
+      "data": {
+        "user": {
+          "id": "2",
+          "username": "student01",
+          "isActive": true
+        }
+      }
+    }
+
+#### Reactivation Rules
+
+- Identify the current Admin through the session.
+- Verify Admin permissions.
+- Begin a database transaction.
+- Lock the target user row.
+- Confirm the account is inactive.
+- Confirm the target role is user.
+- Set users.is_active = TRUE.
+- Increment users.session_version again.
+- Insert an admin_audit_logs record.
+- Commit only when both writes succeed.
+- Roll back if a required write fails.
+- Old sessions must remain invalid.
+- Require the user to Login again.
+- Do not automatically restore deleted content.
+- Do not automatically change the user's role.
+- Protect the request against CSRF.
+
+#### Audit Log
+
+- action: user.reactivate
+- target_type: user
+- target_id: target userId
+- actor_user_id: current Admin ID
+- result: success
+
+#### Errors
+
+- 400: Invalid request
+- 401: Unauthenticated
+- 403: Admin permission required
+- 403: Protected target account
+- 404: User not found
+- 409: Account already active
+- 422: Invalid reason
+- 500: Internal server error
+
+---
+
+### 22.5 User Account State Rules
+
+Allowed account states:
+
+- Active: users.is_active = TRUE
+- Inactive: users.is_active = FALSE
+
+Active -> Inactive:
+- Authorized administrative deactivation.
+- Revoke existing login sessions.
+
+Inactive -> Active:
+- Authorized administrative reactivation.
+- Require a new Login.
+
+User data is not physically deleted.
+Account deletion requires a separate policy.
+
+### 22.6 Role and Permission Rules
+
+- Public registration creates role = user.
+- Normal Admin cannot assign Admin roles.
+- Normal Admin cannot change user roles.
+- Normal Admin cannot deactivate another Admin.
+- Normal Admin cannot reactivate Admin accounts.
+- Admin cannot deactivate their own account.
+- Role promotion requires a separate protected
+  approval and provisioning process.
+- Never use hidden URLs as authorization.
+- Validate permissions on every Admin request.
+
+### 22.7 Session Revocation Rules
+
+- users.session_version is maintained by Backend.
+- An authenticated session stores sessionVersion.
+- Backend compares it with the database value.
+- Increment the version on deactivation.
+- Increment the version on reactivation.
+- Reject sessions with outdated versions.
+- Reject sessions belonging to inactive accounts.
+- Do not restore old session validity.
+- This mechanism requires real middleware.
+- Session invalidation is not automatic merely
+  because the database column exists.
+
+### 22.8 Database Dependencies
+
+Required tables:
+- users
+- profiles
+- admin_audit_logs
+
+Session storage:
+- sessions
+
+Important fields:
+- users.id
+- users.username
+- users.role
+- users.is_active
+- users.session_version
+- profiles.user_id
+- admin_audit_logs.actor_user_id
+- admin_audit_logs.action
+- admin_audit_logs.target_type
+- admin_audit_logs.target_id
+
+Rules:
+- Use parameterized SQL queries.
+- Use a transaction for state changes and auditing.
+- Apply appropriate row locking.
+- Do not physically delete related user data.
+- Validate the database schema before implementation.
+
+### 22.9 Frontend Integration Notes
+
+Admin frontend should:
+- Use GET /admin/users for searching accounts.
+- Use GET /admin/users/:userId for details.
+- Use POST /admin/users/:userId/deactivate.
+- Use POST /admin/users/:userId/reactivate.
+- Show the current account status.
+- Request a reason before changing status.
+- Display confirmation before deactivation.
+- Hide protected actions for Admin accounts.
+- Handle 401, 403, 404, 409 and 422.
+- Send authenticated cookies.
+- Include the agreed CSRF protection.
+- Never rely only on frontend role checks.
+- Refresh user data after successful updates.
+
+### 22.10 Future Security Tests
+
+- Unauthenticated request returns 401.
+- Normal user receives 403.
+- Admin can list permitted user accounts.
+- Admin can inspect an account.
+- Admin can deactivate an active user.
+- Admin cannot deactivate their own account.
+- Admin cannot deactivate another Admin.
+- Normal user cannot change account status.
+- Client-supplied role is rejected.
+- A deactivated user cannot access protected APIs.
+- Existing sessions become invalid.
+- Reactivation requires authorized Admin access.
+- Reactivated user must Login again.
+- A failed audit write rolls back the state change.
+- Concurrent status changes are handled safely.
+- No passwords or secrets are exposed.
+- Inactive user content follows visibility policy.
+
+Test Status: NOT STARTED
+
+### 22.11 Pending Decisions
+
+- Final Admin account provisioning policy
+- Account deactivation and appeal workflow
+- Role escalation approval process
+- Admin permission levels
+- Whether users receive status notifications
+- Final audit retention rules
+- Session cleanup strategy
+- CSRF protection implementation
+- Privacy and account erasure policies
+- Final API approval
+
+---
+
+## 23. Admin Audit Logs API
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Base Path: /api/v1/admin/audit-logs
+- Authentication Required: Yes
+- Authorization: Admin Only
+- Status: DRAFT
+
+### 23.1 Get Admin Audit Logs
+
+- Method: GET
+- Path: /api/v1/admin/audit-logs
+- Required Role: admin
+
+#### Query Parameters
+
+- actorUserId: optional BIGINT string
+- action: optional action name
+- targetType: optional target type
+- result: optional, success or failed
+- startDate: optional ISO 8601 UTC timestamp
+- endDate: optional ISO 8601 UTC timestamp
+- limit: optional, default 20, maximum 50
+- cursor: optional opaque pagination cursor
+
+Example:
+GET /api/v1/admin/audit-logs?limit=20
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Audit logs retrieved successfully.",
+      "data": {
+        "logs": [
+          {
+            "id": "9001",
+            "actor": {
+              "id": "1",
+              "username": "admin01"
+            },
+            "action": "post.hide",
+            "targetType": "post",
+            "targetId": "100",
+            "result": "success",
+            "createdAt": "2026-11-14T05:30:00Z"
+          }
+        ],
+        "nextCursor": null,
+        "hasMore": false
+      }
+    }
+
+#### Authentication Rules
+
+- Run requireAuth before requireAdmin.
+- Verify the current authenticated session.
+- Check users.is_active.
+- Verify current users.role.
+- Check session_version when enabled.
+- Reject unauthenticated requests with 401.
+- Reject unauthorized requests with 403.
+- Never trust role from the frontend.
+
+#### Filtering Rules
+
+- Validate all query parameters.
+- Validate actorUserId as a BIGINT identifier.
+- Validate action against supported action names.
+- Validate targetType against supported values.
+- Validate result against supported values.
+- Validate date ranges.
+- startDate must not be after endDate.
+- Apply an agreed maximum query date range.
+- Proposed maximum date range: 90 days.
+- Treat the pagination cursor as opaque.
+- Reject malformed cursors.
+- Use parameterized SQL queries.
+
+#### Pagination Rules
+
+- Default limit: 20.
+- Maximum limit: 50.
+- Sort by created_at DESC, id DESC.
+- Use stable cursor-based pagination.
+- Generate nextCursor on the server.
+- Apply filters consistently across pages.
+- Do not return unlimited audit records.
+
+#### Privacy Rules
+
+- Return only approved audit summary fields.
+- Do not expose raw session identifiers.
+- Do not expose passwords or reset tokens.
+- Do not expose internal storage credentials.
+- Do not expose unsanitized metadata.
+- Restrict audit access to authorized admins.
+- Set Cache-Control: no-store.
+- Apply suitable request rate limits.
+
+#### Errors
+
+- 400: Invalid query parameters
+- 401: Unauthenticated
+- 403: Audit access denied
+- 429: Too many requests
+- 500: Internal server error
+
+---
+
+### 23.2 Get Admin Audit Log Details
+
+- Method: GET
+- Path: /api/v1/admin/audit-logs/:auditLogId
+- Required Role: admin
+
+#### Path Parameter
+
+- auditLogId: valid BIGINT UNSIGNED identifier
+
+#### Success Response: 200 OK
+
+    {
+      "success": true,
+      "message": "Audit log retrieved successfully.",
+      "data": {
+        "log": {
+          "id": "9001",
+          "actor": {
+            "id": "1",
+            "username": "admin01"
+          },
+          "action": "post.hide",
+          "targetType": "post",
+          "targetId": "100",
+          "result": "success",
+          "metadata": {
+            "reasonCode": "policy_violation"
+          },
+          "requestId": "req-example-9001",
+          "createdAt": "2026-11-14T05:30:00Z"
+        }
+      }
+    }
+
+#### Validation Rules
+
+- Authentication is required.
+- Admin authorization is required.
+- auditLogId must be valid.
+- Audit log must exist.
+- Reject invalid identifiers.
+- Return 404 for nonexistent records.
+- Verify permission before accessing log data.
+
+#### Detail Rules
+
+- Read the log using its primary key.
+- Include only necessary investigation fields.
+- Resolve actor username from users if available.
+- Never modify the original audit record.
+- Return approved and sanitized metadata.
+- Do not expose sensitive internal data.
+- Preserve the stored event timestamp.
+- Use parameterized SQL queries.
+- Set Cache-Control: no-store.
+
+#### Errors
+
+- 400: Invalid auditLogId
+- 401: Unauthenticated
+- 403: Audit access denied
+- 404: Audit log not found
+- 500: Internal server error
+
+---
+
+### 23.3 Audit Log Creation Rules
+
+Audit records are generated by trusted backend code.
+
+Supported action examples:
+- post.hide
+- post.restore
+- report.dismiss
+- report.action_taken
+- user.deactivate
+- user.reactivate
+
+Additional actions require an approved action policy.
+
+#### Successful Administrative Operations
+
+- Authenticate and authorize the Admin.
+- Validate the requested action.
+- Start a database transaction.
+- Perform the protected database change.
+- Insert the corresponding audit record.
+- Use the same transaction for related writes.
+- Commit only when required writes succeed.
+- Roll back when a required write fails.
+
+#### Audit Record Data
+
+- actor_user_id comes from trusted authentication.
+- action is assigned by backend code.
+- target_type identifies the affected entity.
+- target_id identifies the affected record.
+- result records the event outcome.
+- metadata contains approved safe context only.
+- request_id is generated or propagated by backend.
+- created_at is generated by the database.
+
+#### Failed Operations
+
+- Failed attempts may be tracked separately.
+- Do not depend on an audit INSERT inside
+  a transaction that will be rolled back.
+- Use separate security-event logging when needed.
+- Never claim a failed operation succeeded.
+
+---
+
+### 23.4 Audit Log Immutability
+
+- Audit logs are append-only through application APIs.
+- Do not create public audit log write endpoints.
+- Do not create normal Admin update endpoints.
+- Do not create normal Admin delete endpoints.
+- Existing audit records must not be overwritten.
+- Limit database privileges where possible.
+- Separate log read and write privileges if feasible.
+- Database administrators may still have
+  privileged access to stored audit records.
+- Application-level append-only is not
+  equivalent to tamper-proof storage.
+
+### 23.5 Metadata Security
+
+- Metadata must contain only necessary context.
+- Validate and sanitize metadata before insertion.
+- Never store plaintext passwords.
+- Never store password hashes.
+- Never store raw session IDs or cookies.
+- Never store password reset tokens.
+- Never store API keys or SESSION_SECRET.
+- Do not store unnecessary personal information.
+- Prevent unsafe user input from being used
+  directly as trusted log metadata.
+- Avoid unrestricted metadata size.
+
+### 23.6 Audit Log Access Control
+
+Initial access policy:
+- Authentication is required.
+- The account must be active.
+- The current role must be admin.
+- Regular users cannot access audit logs.
+
+Preferred future permission:
+- audit_logs.read
+
+Notes:
+- A separate audit-read permission would allow
+  more restrictive access than the admin role alone.
+- The current users.role design does not yet
+  implement fine-grained permissions.
+- Final access policy requires security approval.
+- Log-reading access may itself be monitored
+  through separate security telemetry.
+
+### 23.7 Database Dependencies
+
+Required tables:
+- admin_audit_logs
+- users
+
+Relationships:
+- admin_audit_logs.actor_user_id references users.id.
+
+Columns:
+- id
+- actor_user_id
+- action
+- target_type
+- target_id
+- result
+- metadata
+- request_id
+- created_at
+
+Proposed indexes:
+- PRIMARY KEY (id)
+- INDEX (actor_user_id, created_at)
+- INDEX (action, created_at)
+- INDEX (target_type, target_id, created_at)
+- INDEX (created_at)
+
+Review a possible (created_at, id) index
+for stable pagination using actual SQL queries.
+
+Database rules:
+- Preserve original audit information.
+- Use parameterized SQL queries.
+- Apply least-privilege database access.
+- Final retention and deletion policy is pending.
+
+### 23.8 Frontend Integration Notes
+
+Admin frontend should:
+- Call GET /admin/audit-logs for history.
+- Support action and result filters.
+- Support filtering by Admin and date.
+- Use pagination for large record sets.
+- Call GET /admin/audit-logs/:auditLogId
+  for individual event details.
+- Display the actor, action, target and time.
+- Show only authorized metadata.
+- Do not provide edit or delete buttons.
+- Handle 400, 401, 403, 404 and 429 errors.
+- Send authenticated session cookies.
+- Do not cache sensitive records publicly.
+- Do not treat hidden UI controls as security.
+
+### 23.9 Required Future Security Tests
+
+- Unauthenticated requests return 401.
+- Normal users receive 403.
+- Authorized Admins can list audit records.
+- Authorized Admins can view record details.
+- Missing log returns 404.
+- Invalid filters are rejected.
+- Date range validation works.
+- Pagination returns stable results.
+- Log detail does not expose secrets.
+- Metadata is properly sanitized.
+- Existing audit records cannot be edited via API.
+- Existing audit records cannot be deleted via API.
+- Failed Admin transactions do not create
+  false successful audit entries.
+- Successful protected changes create audit logs.
+- Unauthorized requests cannot bypass middleware.
+- Admin responses are not publicly cached.
+
+Test Status: NOT STARTED
+
+### 23.10 Pending Decisions
+
+- Final audit retention period
+- Fine-grained audit-read permissions
+- Final audit action vocabulary
+- Allowed metadata schema per action
+- Security event logging for failed attempts
+- Database privilege separation
+- Pagination index optimization
+- Audit monitoring and alert policy
+- Final MySQL implementation
+- Final security approval
+
+---
+
+## 24. Final Admin API and Security Review
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Status: DRAFT SECURITY REVIEW
+- Implementation: NOT STARTED
+- Security Testing: NOT STARTED
+
+### 24.1 Admin Endpoint Coverage
+
+Admin Dashboard - Section 19:
+- 1 endpoint
+
+Admin Reports - Section 20:
+- 3 endpoints
+
+Admin Post Moderation - Section 21:
+- 4 endpoints
+
+Admin User Management - Section 22:
+- 4 endpoints
+
+Admin Audit Logs - Section 23:
+- 2 endpoints
+
+Total Admin Endpoints: 14
+Total Project Endpoints: 63
+
+### 24.2 Authentication Review
+
+Every protected Admin API must:
+- Use the server-side session.
+- Run requireAuth.
+- Reject missing sessions.
+- Reject expired sessions.
+- Verify the current account exists.
+- Check users.is_active.
+- Validate users.session_version.
+- Reject revoked sessions.
+- Never trust identity from request input.
+
+Expected behavior:
+- Unauthenticated: 401
+- Invalid session: 401
+- Valid authorized Admin: Continue
+
+### 24.3 Authorization Review
+
+Every Admin API must:
+- Run requireAdmin after requireAuth.
+- Use the current trusted users.role.
+- Permit only authorized administrators.
+- Reject normal users.
+- Reject inactive administrators.
+- Reject revoked administrative privileges.
+- Never trust client-supplied role values.
+- Never rely on hidden Admin URLs.
+- Follow deny-by-default authorization.
+
+Expected behavior:
+- Authenticated normal user: 403
+- Authorized Admin: Continue
+
+### 24.4 Session Security Review
+
+- Session cookies must be HttpOnly.
+- Secure must be enabled in HTTPS production.
+- SameSite policy must be configured.
+- State-changing operations need CSRF protection.
+- Regenerate session IDs after Login.
+- Apply idle session expiration.
+- Apply absolute session expiration.
+- Never expose SESSION_SECRET.
+- Never log session cookies.
+- Session stores must be production appropriate.
+
+Session revocation:
+- Increment session_version on deactivation.
+- Increment session_version on reactivation.
+- Check the version on protected requests.
+- Require Login after reactivation.
+- Revoke sessions after critical role changes.
+
+### 24.5 Report and Moderation Consistency
+
+Report states:
+- pending
+- dismissed
+- action_taken
+
+Allowed transitions:
+- pending -> dismissed
+- pending -> action_taken
+
+Post moderation states:
+- visible
+- hidden
+
+Allowed transitions:
+- visible -> hidden
+- hidden -> visible
+
+Consistency rules:
+- A report starts in pending.
+- Regular users cannot change report status.
+- Only authorized Admin APIs finalize reports.
+- Finalized reports cannot be overwritten normally.
+- Hiding a post does not automatically finalize
+  every related pending report.
+- A linked pending report may become action_taken.
+- Other reports must be reviewed according
+  to the approved moderation workflow.
+- Restoring a post does not reopen old reports.
+- Soft-deleted posts cannot be restored through
+  the Admin moderation restore endpoint.
+
+### 24.6 Database Transaction Review
+
+Critical operations:
+- Dismiss Report
+- Hide Post
+- Restore Post
+- Mark Report Action Taken
+- Deactivate User
+- Reactivate User
+
+Each operation must:
+- Verify authorization before modification.
+- Validate current record state.
+- Begin a database transaction.
+- Lock affected rows where required.
+- Use a consistent lock acquisition order.
+- Perform the authorized data change.
+- Insert the corresponding audit record.
+- Commit only when required writes succeed.
+- Roll back on failure.
+- Handle concurrent requests safely.
+
+Additional requirements:
+- Avoid duplicate state transitions.
+- Return 409 for relevant state conflicts.
+- Do not silently overwrite another Admin decision.
+- Use parameterized SQL queries.
+- Test deadlock and retry behavior where appropriate.
+
+### 24.7 Admin Audit Log Review
+
+Audit records must:
+- Identify the actor.
+- Identify the action.
+- Identify the target.
+- Record the event time.
+- Record approved safe metadata.
+- Record a trusted result.
+- Preserve accountability.
+
+Security rules:
+- No public audit log API.
+- No normal Admin audit update API.
+- No normal Admin audit delete API.
+- Restrict read access.
+- Use least-privilege database permissions.
+- Never store credentials or session secrets.
+- Sanitize metadata.
+- Preserve successful event history.
+- Handle failed-operation security logging separately.
+
+Application-level append-only logs are not
+automatically tamper-proof.
+
+### 24.8 Admin User Management Review
+
+- Only authorized Admins can change account state.
+- Normal Admins cannot deactivate themselves.
+- Normal Admins cannot deactivate other Admins.
+- Public registration cannot create Admin accounts.
+- Role escalation requires a protected procedure.
+- Deactivation does not physically delete user data.
+- Deactivation revokes existing sessions.
+- Reactivation requires a new Login.
+- Account status changes require audit records.
+- Account deletion requires a separate policy.
+
+### 24.9 Privacy and Response Security
+
+- Admin APIs return only necessary data.
+- Protect reporter identities.
+- Protect personal account information.
+- Never return password_hash.
+- Never return session secrets.
+- Never expose raw reset tokens.
+- Use Cache-Control: no-store.
+- Avoid sensitive information in error messages.
+- Use standard JSON response structures.
+- Serialize BIGINT identifiers as strings.
+- Use ISO 8601 UTC timestamps.
+
+### 24.10 Required Security Test Matrix
+
+Authentication:
+- [ ] Missing session returns 401.
+- [ ] Expired session returns 401.
+- [ ] Revoked session is rejected.
+- [ ] Inactive Admin is rejected.
+
+Authorization:
+- [ ] Normal user receives 403.
+- [ ] Direct URL access cannot bypass permissions.
+- [ ] Client-supplied role is ignored.
+- [ ] Role revocation takes effect.
+
+Reports:
+- [ ] Admin can review a pending report.
+- [ ] Duplicate review is rejected.
+- [ ] Concurrent review attempts are safe.
+- [ ] Finalized reports are protected.
+
+Post Moderation:
+- [ ] Admin can hide a visible post.
+- [ ] Hidden posts disappear publicly.
+- [ ] Admin can restore an eligible hidden post.
+- [ ] Soft-deleted posts cannot be restored here.
+- [ ] Moderation changes create audit logs.
+
+User Management:
+- [ ] Admin can deactivate a normal user.
+- [ ] Deactivated user loses protected access.
+- [ ] Admin cannot deactivate themselves.
+- [ ] Admin cannot deactivate another Admin.
+- [ ] Reactivated users must Login again.
+
+Audit Logs:
+- [ ] Authorized Admin can read audit records.
+- [ ] Normal users cannot read audit records.
+- [ ] Audit metadata contains no secrets.
+- [ ] Audit write failure rolls back protected changes.
+- [ ] Audit records cannot be edited through APIs.
+
+Additional Security:
+- [ ] CSRF protection works.
+- [ ] SQL injection attempts are rejected.
+- [ ] Invalid input is rejected.
+- [ ] Admin responses are not publicly cached.
+- [ ] Rate limiting is enforced where needed.
+
+Test execution status: NOT STARTED
+
+### 24.11 Database Compatibility Checks
+
+Before SQL implementation:
+- Confirm users.role values.
+- Confirm users.is_active.
+- Confirm users.session_version.
+- Confirm posts.moderation_status values.
+- Confirm post_reports.status values.
+- Confirm admin_audit_logs columns and constraints.
+- Confirm audit action and result values.
+- Confirm the session store schema.
+- Confirm foreign key behavior.
+- Confirm all related transactions use InnoDB.
+- Confirm the actual MySQL server version.
+
+These checks require the real database schema
+and must not be marked complete yet.
+
+### 24.12 Pending Security Decisions
+
+- Final Admin provisioning workflow
+- Role escalation and permission policy
+- CSRF protection mechanism
+- Session expiration policy
+- Cookie and CORS configuration
+- Audit retention and privacy policy
+- Failed-operation security logging
+- Moderator conflict handling
+- Final MySQL constraints and indexes
+- Team review and approval
+
+### 24.13 Review Conclusion
+
+- Admin Endpoint Documentation: DRAFT COMPLETE
+- Admin Endpoint Count: PENDING LOCAL CHECK
+- Authentication Design: DOCUMENTED
+- Authorization Design: DOCUMENTED
+- Audit Logging Design: DOCUMENTED
+- Concurrency Design: REQUIRES IMPLEMENTATION
+- SQL Compatibility: NOT TESTED
+- Security Tests: NOT STARTED
+- Frontend Integration: NOT STARTED
+- Production Approval: PENDING
+
+The Admin API design is ready for final
+team and implementation review.
+
+This document does not certify that the
+Admin APIs are implemented or secure.

@@ -1,0 +1,13 @@
+{
+  "name": "unigo-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "db:migrate": "node scripts/migrate.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "mysql2": "^3.24.6"
+  }
+}

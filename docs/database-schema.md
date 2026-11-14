@@ -824,7 +824,7 @@ Allowed values:
 - Never trust portfolio ownership from the frontend.
 - Prevent unauthorized item modifications.
 - Apply file upload limits.
-![alt text](image.png)
+
 ### Design Notes
 - One image per item in the initial version.
 - Multiple images can be added later using

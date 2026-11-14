@@ -415,7 +415,7 @@ Login credential failures must use a generic message.
 
 ---
 
-## 5. Pending API Sections
+## 5. API Contract Coverage and Pending Integration
 
 - Profile API
 - Onboarding API
@@ -427,6 +427,35 @@ Login credential failures must use a generic message.
 - Portfolio API
 - Report API
 - Admin API
+
+### 5.1 Documented API Coverage
+
+- Authentication: 6 endpoints - Draft Complete
+- Profile and Onboarding: 6 endpoints - Draft Complete
+- Social Feed: 22 endpoints - Draft Complete
+- Portfolio: 15 endpoints - Draft Complete
+- Admin: 14 endpoints - Draft Complete
+
+Total Kin-owned documented endpoints: 63
+
+These endpoints are documented but not yet implemented.
+
+### 5.2 Pending Integration
+
+- Final API and database compatibility review
+- Final authentication and security decisions
+- MySQL schema implementation
+- Backend API implementation
+- Frontend integration
+- API and security testing
+- Deployment verification
+
+### 5.3 Scope Notes
+
+- The 63 endpoints belong to Kin's documented scope.
+- University-related APIs owned by Ball are not
+  included in this count.
+- Final API approval is pending.
 
 ## 6. Team Integration
 
@@ -952,7 +981,7 @@ GET /api/v1/posts?limit=20
       "hashtags": ["portfolio"],
       "likeCount": 10,
       "commentCount": 3,
-      "isLikedByMe": false,
+      "isLikedByMe": null,
       "createdAt": "2026-11-14T03:00:00Z",
       "updatedAt": "2026-11-14T03:00:00Z"
     }
@@ -967,6 +996,8 @@ GET /api/v1/posts?limit=20
 - Return 404 for unavailable public posts.
 - Never expose internal moderation notes.
 - Apply the same post representation as the Feed.
+- isLikedByMe is null for unauthenticated visitors.
+- For authenticated visitors, return true or false.
 
 #### Errors
 - 400: Invalid postId
@@ -1079,6 +1110,9 @@ My first UniGO post! #Portfolio #TCAS
 - Do not leave the post empty when no media exists.
 - Media management uses separate endpoints.
 - Admin moderation uses protected Admin APIs.
+- The post must have moderation_status = 'visible'.
+- Reject updates to Admin-hidden posts.
+- Return 409 when the post is hidden.
 
 #### Update Rules
 - Verify ownership on the server.
@@ -1328,6 +1362,8 @@ Jan should:
 - Never trust file paths supplied by the client.
 - Schedule or perform safe storage cleanup.
 - Avoid deleting files used by other records.
+- Reject media deletion from Admin-hidden posts.
+- Return 409 when the parent post is hidden.
 
 #### Success Response: 200 OK
 
@@ -3123,6 +3159,11 @@ or approved for production.
 - Soft-deleted individual items remain deleted.
 - Do not create a second portfolio row.
 - Protect the request against CSRF.
+- Reset portfolios.visibility to 'private'
+  when restoring the portfolio.
+- Require the owner to explicitly publish it again.
+- Apply the visibility change in the same
+  database transaction as the restoration.
 
 #### Success Response: 200 OK
 
@@ -3992,6 +4033,14 @@ Replacement Rules:
   reference is successfully committed.
 - Handle orphaned files through safe cleanup.
 - Enforce private/public file access rules.
+
+Private Media Delivery Policy:
+- Example /uploads paths are illustrative only.
+- Private portfolio images must not be served
+  through unrestricted public static routes.
+- Backend or storage authorization must be enforced.
+- Short-lived signed URLs require an expiry policy.
+- Media delivery design remains pending approval.
 
 ### 18.7 Portfolio Item Ordering Review
 
@@ -5978,7 +6027,7 @@ Admin Audit Logs - Section 23:
 - 2 endpoints
 
 Total Admin Endpoints: 14
-Total Project Endpoints: 63
+Total Kin-owned Documented Endpoints: 63
 
 ### 24.2 Authentication Review
 
@@ -6248,3 +6297,315 @@ team and implementation review.
 
 This document does not certify that the
 Admin APIs are implemented or secure.
+
+---
+
+## 25. Cross-system Security and Response Review
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Status: DRAFT REVIEW
+- Scope: 63 documented Kin-owned API endpoints
+- Implementation: NOT STARTED
+- Security Testing: NOT STARTED
+
+### 25.1 Authentication and Session Policy
+
+Authentication design:
+- Server-side session authentication.
+- Session ID is delivered through a cookie.
+- The session cookie must be HttpOnly.
+- Use HTTPS and Secure cookies in production.
+- Apply an explicit SameSite policy.
+- Regenerate the session ID after login.
+- Destroy the server session on logout.
+- Do not store raw session IDs in localStorage.
+- Never expose SESSION_SECRET.
+
+Session validation:
+- Verify session existence and expiration.
+- Verify the authenticated user still exists.
+- Check users.is_active.
+- Check users.session_version.
+- Load current trusted authorization information.
+- Reject revoked sessions.
+
+Expiration:
+- Enforce idle timeout on the server.
+- Enforce absolute timeout on the server.
+- Remember Me requires a separate approved policy.
+- Final timeout durations are pending approval.
+
+Session storage:
+- Production sessions require a persistent
+  or otherwise production-appropriate store.
+- Do not rely on Express MemoryStore in production.
+- Confirm the sessions table/store compatibility.
+
+### 25.2 Cookie and CSRF Policy
+
+Cookie proposal:
+- HttpOnly: true
+- Secure: true in HTTPS production
+- SameSite: Lax for an appropriate
+  same-site deployment
+- Path: /
+- Domain: omitted unless explicitly necessary
+
+CSRF requirements:
+- Protect state-changing cookie-authenticated APIs.
+- Cover POST, PUT, PATCH and DELETE.
+- Include login/logout CSRF considerations.
+- Validate CSRF protection on the backend.
+- Reject invalid or missing CSRF proof.
+- Use Origin and Fetch Metadata checks
+  as appropriate defense-in-depth controls.
+- Do not rely on SameSite alone by default.
+- Never place CSRF tokens in URLs.
+- Never log CSRF tokens.
+
+Implementation decision:
+- Prefer a well-reviewed synchronizer-token
+  or signed double-submit-cookie approach.
+- Token issuance and validation must be specified.
+- Final mechanism depends on deployment topology.
+- Any new token endpoint must be added to
+  the API inventory and endpoint count.
+
+### 25.3 CORS and Frontend Integration
+
+- Same-origin deployment is preferred when practical.
+- CORS configuration depends on deployed origins.
+- Allow only approved frontend origins.
+- Do not use Access-Control-Allow-Origin: *
+  with credentialed requests.
+- If cross-origin credentials are required,
+  configure credentials support explicitly.
+- Validate the incoming Origin.
+- Restrict allowed methods and headers.
+- Include CSRF headers in the allowed headers
+  when the final mechanism requires them.
+- Do not reflect arbitrary request origins.
+- CORS is not authentication or authorization.
+- Backend must still validate sessions and roles.
+
+Frontend requests:
+- Use credentials: "include" when required.
+- Use the agreed API base URL.
+- Follow the backend's CSRF policy.
+- Handle 401 and 403 differently.
+- Never send userId or role as identity proof.
+
+Cross-site deployment:
+- SameSite=None may be required.
+- SameSite=None requires Secure.
+- Cross-site cookies may face browser restrictions.
+- Confirm compatibility before final approval.
+
+### 25.4 Authorization Rules
+
+Public endpoints:
+- Return approved public information only.
+- Enforce visibility and moderation rules.
+
+Authenticated endpoints:
+- Require a valid session.
+- Check current account status.
+- Reject inactive users.
+- Check ownership of private resources.
+
+Admin endpoints:
+- Require authentication.
+- Require Admin authorization.
+- Check current trusted users.role.
+- Never trust client-provided role values.
+- Deny unauthorized operations by default.
+- Revalidate authorization on each request.
+
+Ownership:
+- Use the authenticated session identity.
+- Verify ownership using database relationships.
+- Never trust a supplied owner ID.
+- Validate access to nested resources.
+- Do not reveal private resource existence
+  unnecessarily through error responses.
+
+### 25.5 Standard Response Format
+
+Success response:
+
+```json
+{
+  "success": true,
+  "message": "Request completed successfully.",
+  "data": {}
+}
+```
+
+Error response:
+
+```json
+{
+  "success": false,
+  "message": "Validation failed.",
+  "errors": [
+    {
+      "field": "email",
+      "code": "INVALID_EMAIL",
+      "detail": "Email format is invalid."
+    }
+  ]
+}
+```
+
+Response rules:
+- Use a consistent success and error structure.
+- data may be null where appropriate.
+- errors contains structured error objects.
+- field is optional for non-field errors.
+- Do not expose SQL errors or stack traces.
+- Do not expose password hashes or secrets.
+- All BIGINT IDs are serialized as strings.
+- Timestamps use ISO 8601 UTC.
+- Use camelCase for JSON field names.
+- Keep repeated resource objects consistent.
+
+### 25.6 HTTP Error Status Policy
+
+- 400: Malformed request or invalid parameters
+- 401: Missing, expired or invalid authentication
+- 403: Authenticated but insufficient permission
+- 404: Resource missing or intentionally unavailable
+- 409: Resource state or uniqueness conflict
+- 413: Uploaded file exceeds allowed size
+- 415: Unsupported media type
+- 422: Semantically invalid request data
+- 429: Rate limit exceeded
+- 500: Unexpected internal server error
+
+Rules:
+- Return meaningful machine-readable error codes.
+- Use generic authentication failure messages.
+- Do not reveal whether a login identifier exists.
+- Do not expose internal implementation details.
+- Preserve the agreed privacy behavior for 404.
+- Log unexpected errors safely on the server.
+- Use request IDs for operational troubleshooting.
+
+### 25.7 Validation and Data Protection
+
+- Validate request bodies on the server.
+- Validate query and path parameters.
+- Reject protected or unknown writable fields.
+- Use parameterized SQL queries.
+- Limit JSON request body sizes.
+- Limit upload sizes.
+- Validate actual uploaded file content.
+- Prevent path traversal.
+- Control access to private media files.
+- Use safe external URL validation.
+- Render user content safely against XSS.
+- Apply rate limits to sensitive operations.
+- Use database constraints for uniqueness.
+- Use transactions for related writes.
+- Do not rely only on frontend validation.
+
+### 25.8 Sensitive Endpoints
+
+Authentication:
+- Rate-limit login attempts.
+- Prevent account enumeration.
+- Hash passwords using an approved algorithm.
+- Store password reset tokens as hashes.
+- Use expiring, single-use reset tokens.
+- Revoke appropriate sessions after password reset.
+
+Profile and Social Feed:
+- Verify ownership.
+- Respect public/private visibility.
+- Respect moderation and soft-delete status.
+- Do not expose hidden content or private media.
+
+Portfolio:
+- Enforce parent portfolio visibility.
+- Protect private image delivery.
+- Verify item ownership.
+- Validate restore and reorder operations.
+
+Admin:
+- Revalidate Admin authorization.
+- Require audit records for successful
+  sensitive administrative actions.
+- Prevent unauthorized role changes.
+- Revoke sessions after account deactivation.
+- Use transactions for related database changes.
+
+### 25.9 Security Response Test Matrix
+
+Authentication:
+- [ ] Missing session returns 401.
+- [ ] Expired session returns 401.
+- [ ] Invalid session is rejected.
+- [ ] Session regeneration works after login.
+- [ ] Logout invalidates the server session.
+- [ ] Session version revocation works.
+
+CSRF and CORS:
+- [ ] Missing CSRF proof is rejected when required.
+- [ ] Invalid CSRF proof is rejected.
+- [ ] Approved frontend origin is allowed.
+- [ ] Unapproved credentialed origin is rejected.
+- [ ] Production cookie configuration works.
+
+Authorization:
+- [ ] Users cannot edit another user's resources.
+- [ ] Normal users cannot access Admin APIs.
+- [ ] Inactive accounts lose protected access.
+- [ ] Private resources remain private.
+- [ ] Hidden posts cannot be modified improperly.
+
+Responses:
+- [ ] Successful responses use the common format.
+- [ ] Error responses use the common format.
+- [ ] BIGINT IDs are returned as strings.
+- [ ] Timestamps use UTC.
+- [ ] Sensitive fields never appear publicly.
+
+Validation:
+- [ ] Invalid input is rejected.
+- [ ] SQL injection attempts do not execute SQL.
+- [ ] Invalid uploads are rejected.
+- [ ] Rate limiting works.
+- [ ] Private image access requires authorization.
+
+Test execution status: NOT STARTED
+
+### 25.10 Pending Decisions
+
+- Final production frontend origin
+- Final backend API origin
+- Same-origin or cross-origin deployment
+- Final SameSite cookie policy
+- CSRF token generation and delivery
+- Session idle and absolute timeouts
+- Remember Me expiration behavior
+- Production session storage
+- Final rate limiting thresholds
+- Private media storage and delivery
+- Team security approval
+
+### 25.11 Review Conclusion
+
+- Endpoint Inventory: VERIFIED AT DOCUMENT LEVEL
+- Authentication Design: DOCUMENTED
+- Authorization Design: DOCUMENTED
+- CSRF Mechanism: PENDING FINAL SELECTION
+- CORS Policy: PENDING DEPLOYMENT DECISION
+- Response Standard: DOCUMENTED
+- Database Compatibility: NOT RUNTIME TESTED
+- Security Tests: NOT STARTED
+- Final Approval: PENDING
+
+This review documents cross-system security
+requirements but does not certify that the
+application has been implemented or tested.

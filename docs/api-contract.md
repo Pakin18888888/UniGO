@@ -2814,3 +2814,1279 @@ GET /posts?hashtag=... reuses an existing route.
 
 This review does not mean the APIs are implemented
 or approved for production.
+
+---
+
+## 16. Portfolio API - Main Portfolio
+
+- Owner: Kin
+- Frontend Integration: Jan
+- Database: portfolios
+- Status: DRAFT
+
+### 16.1 Get My Portfolio
+
+- Method: GET
+- Path: /api/v1/portfolios/me
+- Authentication Required: Yes
+
+#### Request
+- No JSON body required.
+- Browser sends the session cookie.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio retrieved successfully.",
+  "data": {
+    "portfolio": {
+      "id": "301",
+      "userId": "1",
+      "title": "My Game Development Portfolio",
+      "summary": "My projects and creative works.",
+      "visibility": "private",
+      "createdAt": "2026-11-14T03:00:00Z",
+      "updatedAt": "2026-11-14T03:00:00Z",
+      "deletedAt": null
+    }
+  }
+}
+```
+
+#### Rules
+- Authentication is required.
+- Get userId from the session.
+- Return only the current user's portfolio.
+- Include both public and private portfolios.
+- A soft-deleted portfolio may be returned to
+  its owner with deletedAt set, for restoration.
+- Never expose another user's private portfolio.
+- Do not return password or session information.
+
+#### Errors
+- 401: Unauthenticated
+- 404: Portfolio does not exist
+- 500: Internal server error
+
+---
+
+### 16.2 Get Public User Portfolio
+
+- Method: GET
+- Path: /api/v1/users/:userId/portfolio
+- Authentication Required: No
+
+#### Path Parameter
+- userId: valid BIGINT UNSIGNED identifier.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Public portfolio retrieved successfully.",
+  "data": {
+    "portfolio": {
+      "id": "301",
+      "userId": "1",
+      "title": "My Game Development Portfolio",
+      "summary": "My projects and creative works.",
+      "visibility": "public",
+      "createdAt": "2026-11-14T03:00:00Z",
+      "updatedAt": "2026-11-14T03:00:00Z"
+    }
+  }
+}
+```
+
+#### Rules
+- Only public portfolios are accessible.
+- Private portfolios are not returned.
+- Soft-deleted portfolios are not returned.
+- Portfolios of inactive users are not public.
+- Return 404 for unavailable portfolios.
+- Do not expose private user information.
+- Validate the userId path parameter.
+- Portfolio items are retrieved through
+  endpoints defined in the next section.
+
+#### Errors
+- 400: Invalid userId
+- 404: Portfolio unavailable
+- 500: Internal server error
+
+---
+
+### 16.3 Create Portfolio
+
+- Method: POST
+- Path: /api/v1/portfolios
+- Authentication Required: Yes
+- Content-Type: application/json
+
+#### Request Body
+
+```json
+{
+  "title": "My Game Development Portfolio",
+  "summary": "A collection of my game projects.",
+  "visibility": "private"
+}
+```
+
+#### Validation Rules
+- Authentication is required.
+- title is required.
+- title must not be empty after trimming.
+- Proposed title limit: 150 characters.
+- summary is optional.
+- Proposed summary limit: 3000 characters.
+- visibility accepts: private, public.
+- Default visibility is private.
+- Reject unknown and protected fields.
+- Never accept userId from the frontend.
+
+#### Create Rules
+- Use userId from the session.
+- Each user can have one main portfolio.
+- Check existing portfolio records.
+- Enforce UNIQUE (user_id) in MySQL.
+- Handle concurrent duplicate creation safely.
+- If an active portfolio exists, return 409.
+- If a soft-deleted portfolio exists, return
+  409 and require the restore endpoint.
+- Do not create a duplicate portfolio.
+- Use parameterized SQL queries.
+
+#### Success Response: 201 Created
+
+```json
+{
+  "success": true,
+  "message": "Portfolio created successfully.",
+  "data": {
+    "portfolio": {
+      "id": "301",
+      "userId": "1",
+      "title": "My Game Development Portfolio",
+      "summary": "A collection of my game projects.",
+      "visibility": "private",
+      "createdAt": "2026-11-14T03:00:00Z",
+      "updatedAt": "2026-11-14T03:00:00Z",
+      "deletedAt": null
+    }
+  }
+}
+```
+
+#### Errors
+- 400: Invalid request
+- 401: Unauthenticated
+- 409: Portfolio already exists or requires restore
+- 422: Validation failed
+- 429: Too many requests
+- 500: Internal server error
+
+---
+
+### 16.4 Update My Portfolio
+
+- Method: PATCH
+- Path: /api/v1/portfolios/me
+- Authentication Required: Yes
+- Content-Type: application/json
+
+#### Request Body
+
+```json
+{
+  "title": "Updated Game Portfolio",
+  "summary": "My latest development projects.",
+  "visibility": "public"
+}
+```
+
+#### Editable Fields
+- title
+- summary
+- visibility
+
+#### Validation Rules
+- Authentication is required.
+- Update only supplied fields.
+- At least one editable field is required.
+- title cannot be empty or null.
+- summary may be set to null.
+- visibility accepts private or public.
+- Reject unknown and protected fields.
+- Do not allow changes to id or userId.
+- The portfolio must not be soft-deleted.
+
+#### Update Rules
+- Identify the owner using the session.
+- Only the owner can edit the portfolio.
+- Validate all submitted fields.
+- Preserve created_at.
+- Update updated_at.
+- Use parameterized SQL queries.
+- Visibility changes take effect immediately
+  in public portfolio API responses.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio updated successfully.",
+  "data": {
+    "portfolio": {
+      "id": "301",
+      "userId": "1",
+      "title": "Updated Game Portfolio",
+      "summary": "My latest development projects.",
+      "visibility": "public",
+      "updatedAt": "2026-11-14T04:00:00Z"
+    }
+  }
+}
+```
+
+#### Errors
+- 400: Invalid request
+- 401: Unauthenticated
+- 404: Portfolio not found
+- 409: Portfolio is soft-deleted
+- 422: Validation failed
+- 500: Internal server error
+
+---
+
+### 16.5 Delete My Portfolio
+
+- Method: DELETE
+- Path: /api/v1/portfolios/me
+- Authentication Required: Yes
+
+#### Request
+- No JSON body required.
+
+#### Delete Rules
+- Authentication is required.
+- Identify the current user through the session.
+- Only the portfolio owner can delete it.
+- Use soft delete.
+- Set portfolios.deleted_at to current UTC time.
+- Do not physically delete the portfolio.
+- Preserve portfolio_items for possible recovery.
+- Hide the portfolio and its items publicly.
+- Repeated deletion may be treated as a no-op.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio deleted successfully.",
+  "data": null
+}
+```
+
+#### Errors
+- 401: Unauthenticated
+- 404: Portfolio not found
+- 500: Internal server error
+
+---
+
+### 16.6 Restore My Portfolio
+
+- Method: POST
+- Path: /api/v1/portfolios/me/restore
+- Authentication Required: Yes
+
+#### Request
+- No JSON body required.
+
+#### Restore Rules
+- Authentication is required.
+- Identify the owner through the session.
+- Only the owner can restore a portfolio.
+- The portfolio must already exist.
+- The portfolio must be soft-deleted.
+- Restoration must follow retention policy.
+- Set portfolios.deleted_at to NULL.
+- Preserve its original portfolio ID.
+- Preserve its existing portfolio_items.
+- Soft-deleted individual items remain deleted.
+- Do not create a second portfolio row.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio restored successfully.",
+  "data": {
+    "portfolio": {
+      "id": "301",
+      "userId": "1",
+      "title": "My Game Development Portfolio",
+      "visibility": "private",
+      "deletedAt": null
+    }
+  }
+}
+```
+
+#### Errors
+- 401: Unauthenticated
+- 404: Portfolio not found
+- 409: Portfolio is not deleted
+- 500: Internal server error
+
+---
+
+### 16.7 Portfolio Visibility Rules
+
+Allowed values:
+- private
+- public
+
+#### Private
+- Visible to the portfolio owner only.
+- Not accessible through public Portfolio APIs.
+- Items must not be publicly accessible.
+- Admin access requires explicit authorization.
+
+#### Public
+- Public metadata can be viewed without Login.
+- Public items may be viewed when the parent
+  portfolio is publicly available.
+- Only approved profile information is exposed.
+
+#### Soft Deleted
+- Not accessible through public APIs.
+- Items must not be publicly accessible.
+- Owner may restore the portfolio.
+- Retention policy determines restoration period.
+
+### 16.8 Database Dependencies
+
+Tables:
+- users
+- portfolios
+- portfolio_items
+
+Relationships:
+- portfolios.user_id references users.id.
+- portfolio_items.portfolio_id references portfolios.id.
+
+Constraints:
+- portfolios.id is PRIMARY KEY.
+- portfolios.user_id is UNIQUE.
+- portfolios.user_id is FOREIGN KEY.
+- deleted_at is used for soft deletion.
+
+Rules:
+- Use parameterized SQL queries.
+- Use authenticated userId for ownership checks.
+- Prevent duplicate main portfolios.
+- Apply database transactions where required.
+- Never trust userId sent by the frontend.
+
+### 16.9 Frontend Integration Notes
+
+Jan should:
+- Use GET /portfolios/me for the owner's page.
+- Use POST /portfolios to create a portfolio.
+- Use PATCH /portfolios/me for edits.
+- Use PATCH /portfolios/me to change visibility.
+- Use DELETE /portfolios/me for soft deletion.
+- Use POST /portfolios/me/restore for recovery.
+- Use GET /users/:userId/portfolio for public views.
+- Handle 401, 404, 409 and 422 errors.
+- Send authenticated cookies for private APIs.
+- Include CSRF protection for write operations.
+- Never use hidden UI controls as security.
+
+### 16.10 Pending Decisions
+
+- Final portfolio title and summary limits
+- Portfolio deletion retention policy
+- Whether onboarding is required for creation
+- Public item visibility rules
+- Portfolio item limits
+- CSRF protection implementation
+- Final API approval
+
+---
+
+## 17. Portfolio Items API
+
+- Owner: Kin
+- Frontend Integration: Jan
+- Base Path: /api/v1/portfolios
+- Database: portfolio_items
+- Status: DRAFT
+
+### 17.1 Get My Portfolio Items
+
+- Method: GET
+- Path: /api/v1/portfolios/me/items
+- Authentication Required: Yes
+
+#### Query Parameters
+- includeDeleted: optional, default false
+- Allowed values: true, false
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio items retrieved successfully.",
+  "data": {
+    "items": [
+      {
+        "id": "501",
+        "portfolioId": "301",
+        "itemType": "project",
+        "title": "3D Adventure Game",
+        "description": "A game developed with Unity.",
+        "imageUrl": "/uploads/portfolio/game.webp",
+        "externalUrl": "https://example.com/project",
+        "sortOrder": 0,
+        "createdAt": "2026-11-14T03:00:00Z",
+        "updatedAt": "2026-11-14T03:00:00Z",
+        "deletedAt": null
+      }
+    ]
+  }
+}
+```
+
+#### Rules
+- Authentication is required.
+- Get userId from the session.
+- Find the portfolio owned by the current user.
+- Return only items belonging to that portfolio.
+- Exclude soft-deleted items by default.
+- includeDeleted=true is available to the owner.
+- Sort by sort_order ASC, id ASC.
+- A soft-deleted parent portfolio must not
+  expose items through normal active views.
+- A portfolio must exist.
+- Do not expose internal file keys.
+- Never return another user's private items.
+
+#### Errors
+- 400: Invalid query
+- 401: Unauthenticated
+- 404: Portfolio not found
+- 500: Internal server error
+
+---
+
+### 17.2 Get Public Portfolio Items
+
+- Method: GET
+- Path: /api/v1/users/:userId/portfolio/items
+- Authentication Required: No
+
+#### Path Parameter
+- userId: valid BIGINT UNSIGNED identifier.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Public portfolio items retrieved successfully.",
+  "data": {
+    "items": [
+      {
+        "id": "501",
+        "itemType": "project",
+        "title": "3D Adventure Game",
+        "description": "A Unity project.",
+        "imageUrl": "/uploads/portfolio/game.webp",
+        "externalUrl": "https://example.com/project",
+        "sortOrder": 0
+      }
+    ]
+  }
+}
+```
+
+#### Rules
+- The target user must exist and be active.
+- The portfolio must be public.
+- The portfolio must not be soft-deleted.
+- Return only non-deleted items.
+- Sort by sort_order ASC, id ASC.
+- Never expose internal file keys.
+- Never expose private portfolio data.
+- Return 404 when the portfolio is unavailable.
+
+#### Errors
+- 400: Invalid userId
+- 404: Portfolio unavailable
+- 500: Internal server error
+
+---
+
+### 17.3 Create Portfolio Item
+
+- Method: POST
+- Path: /api/v1/portfolios/me/items
+- Authentication Required: Yes
+- Content-Type: application/json
+
+#### Request Body
+
+```json
+{
+  "itemType": "project",
+  "title": "3D Adventure Game",
+  "description": "A game developed using Unity.",
+  "externalUrl": "https://example.com/project"
+}
+```
+
+#### Allowed Item Types
+- project
+- certificate
+- activity
+
+#### Validation Rules
+- Authentication is required.
+- The user must own the portfolio.
+- The portfolio must exist and be active.
+- itemType is required.
+- title is required.
+- Reject empty or whitespace-only titles.
+- Proposed title limit: 150 characters.
+- description is optional.
+- externalUrl is optional.
+- Only allow safe HTTPS external URLs.
+- Reject unknown fields.
+- Proposed maximum: 30 active items.
+
+#### Create Rules
+- Get userId from the session.
+- Find the current user's portfolio.
+- Reject creation in soft-deleted portfolios.
+- Validate the item count.
+- Prevent concurrent requests from
+  exceeding the item limit.
+- Assign a sortOrder after existing items.
+- Create a new portfolio_items record.
+- image_key is initially NULL.
+- Do not accept portfolioId from the frontend.
+- Use parameterized SQL queries.
+- Protect the request against CSRF.
+
+#### Success Response: 201 Created
+
+```json
+{
+  "success": true,
+  "message": "Portfolio item created successfully.",
+  "data": {
+    "item": {
+      "id": "501",
+      "portfolioId": "301",
+      "itemType": "project",
+      "title": "3D Adventure Game",
+      "description": "A game developed using Unity.",
+      "imageUrl": null,
+      "externalUrl": "https://example.com/project",
+      "sortOrder": 0,
+      "createdAt": "2026-11-14T03:00:00Z"
+    }
+  }
+}
+```
+
+#### Errors
+- 400: Invalid request
+- 401: Unauthenticated
+- 404: Portfolio not found
+- 409: Portfolio inactive or item limit reached
+- 422: Validation failed
+- 429: Too many requests
+- 500: Internal server error
+
+---
+
+### 17.4 Update Portfolio Item
+
+- Method: PATCH
+- Path: /api/v1/portfolios/me/items/:itemId
+- Authentication Required: Yes
+- Content-Type: application/json
+
+#### Request Body
+
+```json
+{
+  "itemType": "project",
+  "title": "Updated Game Project",
+  "description": "An improved Unity project.",
+  "externalUrl": "https://example.com/updated"
+}
+```
+
+#### Editable Fields
+- itemType
+- title
+- description
+- externalUrl
+
+#### Validation Rules
+- Authentication is required.
+- The item must exist.
+- The item must belong to the owner's portfolio.
+- The parent portfolio must be active.
+- The item must not be soft-deleted.
+- At least one editable field is required.
+- Validate itemType and title.
+- Reject unknown or protected fields.
+- description and externalUrl may be cleared.
+- Reject unsafe external URLs.
+
+#### Update Rules
+- Identify the current user from the session.
+- Verify portfolio and item ownership.
+- Update only supplied fields.
+- Preserve created_at.
+- Update updated_at.
+- Do not allow changes to portfolioId or itemId.
+- Image changes use the separate image endpoint.
+- Ordering uses the separate order endpoint.
+- Use parameterized SQL queries.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio item updated successfully.",
+  "data": {
+    "item": {
+      "id": "501",
+      "itemType": "project",
+      "title": "Updated Game Project",
+      "description": "An improved Unity project.",
+      "externalUrl": "https://example.com/updated",
+      "updatedAt": "2026-11-14T04:00:00Z"
+    }
+  }
+}
+```
+
+#### Errors
+- 400: Invalid request
+- 401: Unauthenticated
+- 404: Item not found
+- 409: Portfolio or item inactive
+- 422: Validation failed
+- 500: Internal server error
+
+---
+
+### 17.5 Delete Portfolio Item
+
+- Method: DELETE
+- Path: /api/v1/portfolios/me/items/:itemId
+- Authentication Required: Yes
+
+#### Delete Rules
+- Authentication is required.
+- Only the portfolio owner can delete items.
+- Verify that the item belongs to the portfolio.
+- The parent portfolio must be active.
+- Use soft delete.
+- Set portfolio_items.deleted_at to current UTC time.
+- Do not physically delete the item.
+- Preserve image references during retention.
+- Hide deleted items from public APIs.
+- Repeated deletion may be treated as a no-op.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio item deleted successfully.",
+  "data": null
+}
+```
+
+#### Errors
+- 401: Unauthenticated
+- 404: Item not found
+- 409: Parent portfolio inactive
+- 500: Internal server error
+
+---
+
+### 17.6 Restore Portfolio Item
+
+- Method: POST
+- Path: /api/v1/portfolios/me/items/:itemId/restore
+- Authentication Required: Yes
+
+#### Restore Rules
+- Authentication is required.
+- Verify the item belongs to the current user.
+- The parent portfolio must be active.
+- The item must be soft-deleted.
+- Restore only within the allowed retention period.
+- Check the active item count before restoration.
+- Do not exceed the maximum active item limit.
+- Set portfolio_items.deleted_at to NULL.
+- Preserve the original item ID.
+- Assign the item a valid sortOrder.
+- Do not create a duplicate item row.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio item restored successfully.",
+  "data": {
+    "item": {
+      "id": "501",
+      "title": "3D Adventure Game",
+      "deletedAt": null
+    }
+  }
+}
+```
+
+#### Errors
+- 401: Unauthenticated
+- 404: Item not found
+- 409: Item not deleted or item limit reached
+- 500: Internal server error
+
+---
+
+### 17.7 Reorder Portfolio Items
+
+- Method: PUT
+- Path: /api/v1/portfolios/me/items/order
+- Authentication Required: Yes
+- Content-Type: application/json
+
+#### Request Body
+
+```json
+{
+  "itemIds": ["503", "501", "502"]
+}
+```
+
+#### Validation Rules
+- Authentication is required.
+- The parent portfolio must be active.
+- itemIds must be an array.
+- IDs must be valid BIGINT strings.
+- All supplied IDs must belong to the owner.
+- All supplied items must be active.
+- Duplicate item IDs are not allowed.
+- The array must contain every active item
+  exactly once in the initial design.
+- Reject missing, extra or foreign item IDs.
+
+#### Reorder Rules
+- Get the portfolio from the current session user.
+- Lock or otherwise protect the relevant rows
+  during concurrent reorder operations.
+- Update sort_order based on array position.
+- First item gets sort_order = 0.
+- Second item gets sort_order = 1.
+- Continue sequentially.
+- Use one database transaction.
+- Roll back all changes if any item fails.
+- Return the updated order.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio items reordered successfully.",
+  "data": {
+    "itemIds": ["503", "501", "502"]
+  }
+}
+```
+
+#### Errors
+- 400: Invalid itemIds
+- 401: Unauthenticated
+- 404: Portfolio unavailable
+- 409: Invalid or outdated item set
+- 422: Validation failed
+- 500: Internal server error
+
+---
+
+### 17.8 Upload or Replace Item Image
+
+- Method: PUT
+- Path: /api/v1/portfolios/me/items/:itemId/image
+- Authentication Required: Yes
+- Content-Type: multipart/form-data
+
+#### Form Data
+- Field name: image
+- Field type: File
+
+#### Proposed Upload Rules
+- One image per portfolio item.
+- Allowed types: JPEG, PNG, WebP.
+- Proposed maximum size: 5 MB.
+- Validate actual file contents.
+- Reject malformed or unsupported images.
+- Generate a safe unique file key.
+- Never trust the original filename.
+- Store the file outside MySQL.
+- Save the reference in image_key.
+
+#### Replace Rules
+- Verify the authenticated portfolio owner.
+- Verify the item belongs to the portfolio.
+- Reject uploads to soft-deleted items.
+- Reject uploads to inactive portfolios.
+- Store the new image safely.
+- Update image_key in MySQL.
+- Preserve the previous image if replacement fails.
+- Clean up the previous image after a successful
+  replacement when no record references it.
+- Handle external storage failures separately.
+- Never expose internal file paths or credentials.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio item image saved successfully.",
+  "data": {
+    "itemId": "501",
+    "imageUrl": "/uploads/portfolio/game.webp"
+  }
+}
+```
+
+#### Errors
+- 400: Missing or invalid image
+- 401: Unauthenticated
+- 404: Item unavailable
+- 409: Portfolio or item inactive
+- 413: File too large
+- 415: Unsupported media type
+- 422: Invalid image
+- 500: Internal server error
+
+---
+
+### 17.9 Delete Portfolio Item Image
+
+- Method: DELETE
+- Path: /api/v1/portfolios/me/items/:itemId/image
+- Authentication Required: Yes
+
+#### Delete Rules
+- Authentication is required.
+- Verify the portfolio owner.
+- Verify item ownership.
+- Reject modifications to deleted items.
+- Set image_key to NULL.
+- Keep the portfolio item record.
+- Safely clean up the old image file.
+- Do not delete images belonging to other items.
+- Repeated delete requests may be no-ops.
+- Protect the request against CSRF.
+
+#### Success Response: 200 OK
+
+```json
+{
+  "success": true,
+  "message": "Portfolio item image removed successfully.",
+  "data": {
+    "itemId": "501",
+    "imageUrl": null
+  }
+}
+```
+
+#### Errors
+- 401: Unauthenticated
+- 404: Item unavailable
+- 409: Portfolio or item inactive
+- 500: Internal server error
+
+---
+
+### 17.10 Shared Portfolio Item Rules
+
+- Authentication is required for modifications.
+- Only the owner can manage portfolio items.
+- Public APIs return only publicly available items.
+- Private portfolios must not expose item data.
+- Soft-deleted portfolios cannot be modified.
+- Soft-deleted items are excluded by default.
+- Use BIGINT identifiers as strings in JSON.
+- Use ISO 8601 UTC timestamps.
+- Never trust userId or portfolioId from the client.
+- Use parameterized SQL queries.
+- Protect state-changing operations against CSRF.
+- Validate all supported item types.
+- Validate safe external URLs.
+- Apply image upload limits and validation.
+- Use transactions for related database writes.
+- Handle file storage failures safely.
+
+### 17.11 Database Dependencies
+
+Tables:
+- users
+- portfolios
+- portfolio_items
+
+Relationships:
+- portfolios.user_id references users.id.
+- portfolio_items.portfolio_id references portfolios.id.
+
+Fields:
+- id
+- portfolio_id
+- item_type
+- title
+- description
+- image_key
+- external_url
+- sort_order
+- created_at
+- updated_at
+- deleted_at
+
+Proposed Index:
+- INDEX (portfolio_id, sort_order, id)
+
+Database Notes:
+- One portfolio belongs to one user.
+- One portfolio can contain many items.
+- One image is supported per item initially.
+- Deleted items use deleted_at.
+- The final ON DELETE policy is pending approval.
+
+### 17.12 Frontend Integration Notes
+
+Jan should:
+- Call GET /portfolios/me/items for own items.
+- Call GET /users/:userId/portfolio/items
+  to display public items.
+- Call POST /portfolios/me/items to create an item.
+- Call PATCH /portfolios/me/items/:itemId to edit.
+- Call DELETE /portfolios/me/items/:itemId to delete.
+- Call POST /portfolios/me/items/:itemId/restore
+  to restore a soft-deleted item.
+- Call PUT /portfolios/me/items/order for reordering.
+- Use FormData for item image uploads.
+- Use the form field name "image".
+- Call DELETE /portfolios/me/items/:itemId/image
+  to remove an item image.
+- Display the latest saved order.
+- Respect public and private portfolio visibility.
+- Handle validation and upload errors.
+- Send session cookies on protected requests.
+- Include the agreed CSRF protection.
+
+### 17.13 Pending Decisions
+
+- Final maximum number of portfolio items
+- Final description length limit
+- Image storage provider
+- Maximum upload file size
+- External URL validation policy
+- Reorder concurrency implementation
+- Soft-delete restoration period
+- Image cleanup strategy
+- CSRF protection implementation
+- Final API approval
+
+---
+
+## 18. Portfolio API Review
+
+- Project: UniGO!
+- Backend Owner: Kin
+- Frontend Integration: Jan
+- Status: DRAFT REVIEW
+- API Implementation: NOT STARTED
+
+### 18.1 Endpoint Review
+
+Main Portfolio API - Section 16:
+- GET /api/v1/portfolios/me
+- GET /api/v1/users/:userId/portfolio
+- POST /api/v1/portfolios
+- PATCH /api/v1/portfolios/me
+- DELETE /api/v1/portfolios/me
+- POST /api/v1/portfolios/me/restore
+
+Total Main Portfolio Endpoints: 6
+
+Portfolio Items API - Section 17:
+- GET /api/v1/portfolios/me/items
+- GET /api/v1/users/:userId/portfolio/items
+- POST /api/v1/portfolios/me/items
+- PATCH /api/v1/portfolios/me/items/:itemId
+- DELETE /api/v1/portfolios/me/items/:itemId
+- POST /api/v1/portfolios/me/items/:itemId/restore
+- PUT /api/v1/portfolios/me/items/order
+- PUT /api/v1/portfolios/me/items/:itemId/image
+- DELETE /api/v1/portfolios/me/items/:itemId/image
+
+Total Portfolio Item Endpoints: 9
+
+Total Portfolio Endpoints: 15
+Total Documented API Endpoints: 49
+
+### 18.2 Database Relationship Review
+
+Required tables:
+- users
+- portfolios
+- portfolio_items
+
+Relationships:
+- portfolios.user_id references users.id.
+- portfolio_items.portfolio_id references portfolios.id.
+
+Constraints:
+- portfolios.id is PRIMARY KEY.
+- portfolios.user_id is UNIQUE.
+- portfolio_items.id is PRIMARY KEY.
+- All ID foreign key types must match.
+
+Rules:
+- One user can have at most one main portfolio.
+- One portfolio can contain multiple items.
+- Each item belongs to exactly one portfolio.
+- Use BIGINT UNSIGNED IDs.
+- Serialize BIGINT IDs as strings in JSON.
+- Use parameterized SQL queries.
+
+### 18.3 Authentication and Ownership Review
+
+- Private owner APIs require authentication.
+- The backend identifies the owner from the session.
+- Do not accept userId as proof of ownership.
+- Never trust portfolioId supplied by the frontend.
+- Never trust role values from the frontend.
+- Verify item ownership through its parent portfolio.
+- Regular users cannot edit another user's items.
+- Inactive accounts cannot perform protected actions.
+- Protect state-changing endpoints against CSRF.
+- Return only authorized information.
+- Review 403 and 404 behavior to avoid information leaks.
+
+### 18.4 Portfolio Visibility Review
+
+Allowed portfolio visibility:
+- private
+- public
+
+Private Portfolio:
+- Accessible through owner-authorized APIs.
+- Not available through public portfolio APIs.
+- Items are not publicly accessible.
+- Private image files must require authorized access.
+- A hidden UI does not protect private files.
+
+Public Portfolio:
+- Public metadata may be accessed without Login.
+- Only active, non-deleted items are publicly visible.
+- Inactive account portfolios must not appear.
+- File delivery must follow the visibility policy.
+
+Soft-Deleted Portfolio:
+- Not visible through public APIs.
+- Must not allow item creation or modification.
+- Owner may view deletion state for restoration.
+- Restore behavior must follow retention policy.
+
+Security Decision:
+- Proposed: use private file storage.
+- Authorize file access or issue short-lived signed URLs.
+- Never expose private files through unrestricted URLs.
+- Final media delivery approach is pending approval.
+
+### 18.5 Portfolio and Item Deletion Review
+
+Portfolio Soft Delete:
+- Set portfolios.deleted_at.
+- Hide the portfolio and all items publicly.
+- Preserve item records.
+- Do not trigger SQL ON DELETE CASCADE.
+- Allow owner restoration if retention permits.
+
+Portfolio Restore:
+- Restore the original portfolio record.
+- Do not insert a duplicate portfolio.
+- Preserve the existing portfolio ID.
+- Restore parent accessibility.
+- Do not automatically restore individually
+  soft-deleted items.
+- Proposed: reset visibility to private on restore.
+- Final visibility restoration policy is pending.
+
+Item Soft Delete:
+- Set portfolio_items.deleted_at.
+- Do not physically delete the item.
+- Exclude deleted items from public responses.
+- Preserve image references during retention.
+
+Item Restore:
+- Verify the current user owns the item.
+- The parent portfolio must be active.
+- Check maximum active item count.
+- Restore the original item record.
+- Assign a valid display order.
+
+### 18.6 Portfolio Image Review
+
+- One image per item in the initial version.
+- Store image files outside MySQL.
+- Store the reference in portfolio_items.image_key.
+- Validate actual file content and file size.
+- Allow JPEG, PNG and WebP as proposed formats.
+- Generate secure unique file keys.
+- Do not trust original uploaded filenames.
+- Do not expose internal storage credentials.
+- Never allow executable uploaded files.
+
+Replacement Rules:
+- Verify item ownership before replacement.
+- Reject uploads to soft-deleted items.
+- Store the new file safely.
+- Update the database reference.
+- Preserve the old image if replacement fails.
+- Delete old storage files only after the new
+  reference is successfully committed.
+- Handle orphaned files through safe cleanup.
+- Enforce private/public file access rules.
+
+### 18.7 Portfolio Item Ordering Review
+
+- Use portfolio_items.sort_order.
+- The owner can reorder active items.
+- Reject duplicate item IDs.
+- Reject IDs belonging to other portfolios.
+- Reject deleted or nonexistent item IDs.
+- Require the complete active item set.
+- Use one database transaction for reordering.
+- Handle concurrent updates consistently.
+- Assign sequential sort_order values.
+- Sort output by sort_order ASC, id ASC.
+- Roll back all order changes if validation fails.
+
+### 18.8 Request and Response Consistency
+
+- Use the shared API success/error response shape.
+- Use camelCase field names in JSON.
+- Use snake_case column names in MySQL.
+- Map image_key to authorized imageUrl.
+- Use string IDs in JSON responses.
+- Return ISO 8601 UTC timestamps.
+- Return null for missing optional fields.
+- Keep Item responses consistent across endpoints.
+- Apply the same visibility rules to all public APIs.
+- Never expose private storage keys.
+- Validate request bodies and path parameters.
+- Use consistent pagination if item limits expand.
+
+### 18.9 Validation and Security Review
+
+- Validate portfolio titles and summaries.
+- Validate item types: project, certificate, activity.
+- Validate maximum item count.
+- Validate description length.
+- Validate external HTTPS URLs.
+- Reject unsupported URL schemes.
+- Do not fetch user-provided URLs without
+  additional server-side safety controls.
+- Apply file upload size limits.
+- Apply appropriate rate limits.
+- Protect session-authenticated write operations.
+- Do not expose private fields in public responses.
+
+### 18.10 Test Scenarios Before Implementation Approval
+
+Required future test cases:
+- Create first portfolio successfully.
+- Reject duplicate portfolio creation.
+- Reject portfolio creation without Login.
+- Update portfolio as its owner.
+- Reject unauthorized portfolio updates.
+- Hide private portfolios from public APIs.
+- Hide soft-deleted portfolios from public APIs.
+- Restore a soft-deleted portfolio.
+- Create valid portfolio items.
+- Reject invalid item types.
+- Reject adding more than the item limit.
+- Reject modifying another user's item.
+- Soft-delete and restore an item.
+- Reorder active portfolio items.
+- Reject duplicate IDs during reordering.
+- Reject IDs from another portfolio.
+- Upload and replace an item image.
+- Reject invalid and oversized images.
+- Preserve the old image when replacement fails.
+- Prevent unauthorized access to private images.
+- Verify correct item visibility after deletion.
+
+Test status: NOT STARTED
+
+### 18.11 Pending Decisions
+
+- Final file storage provider
+- Private image delivery strategy
+- Portfolio restoration visibility
+- Final retention and deletion policy
+- Maximum number of portfolio items
+- Final image size limits
+- Reorder concurrency implementation
+- CSRF protection mechanism
+- MySQL schema implementation
+- Frontend integration confirmation with Jan
+
+### 18.12 Review Conclusion
+
+- Main Portfolio Contract: DRAFT COMPLETE
+- Portfolio Items Contract: DRAFT COMPLETE
+- Endpoint count verification: PENDING LOCAL CHECK
+- Database consistency: LOGICAL REVIEW ONLY
+- Authorization: DOCUMENTED, NOT IMPLEMENTED
+- File security: REQUIRES FINAL DESIGN
+- API integration tests: NOT STARTED
+- Final implementation approval: PENDING
+
+The Portfolio API Contract is ready for team review,
+but must not be treated as production-ready.

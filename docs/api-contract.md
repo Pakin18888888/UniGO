@@ -2722,3 +2722,95 @@ in the Admin API section.
 - Handling of deleted reported posts
 - CSRF protection implementation
 - Final API approval
+
+---
+
+## 15. Social Feed API Review
+
+Status: DRAFT REVIEW - Pending final implementation
+
+### 15.1 Endpoint Groups
+
+- Posts: 5 endpoints
+- Post Media: 2 endpoints
+- Comments and Likes: 6 endpoints
+- Follow and Unfollow: 5 endpoints
+- Hashtags and Search: 2 new endpoints
+- Post Reports: 2 endpoints
+
+Total Social Feed endpoints: 22
+
+Note:
+GET /posts?hashtag=... reuses an existing route.
+
+### 15.2 Response Consistency
+
+- Use one standard success/error response structure.
+- Serialize all BIGINT IDs as strings.
+- Return timestamps in ISO 8601 UTC.
+- Use consistent Post, Media and Author objects.
+- Use null for isLikedByMe when unauthenticated.
+- Use null for isFollowing when unauthenticated.
+- Use true or false for authenticated users.
+- Ensure response examples match authentication context.
+- Return actual persisted media after uploads.
+
+### 15.3 Authentication and Authorization
+
+- Only authenticated users can create content.
+- Only content owners can edit their own content.
+- Only authorized admins can moderate content.
+- Never trust client-supplied userId or role.
+- Check account status on protected operations.
+- Protect state-changing requests against CSRF.
+- Apply suitable request rate limits.
+- Do not expose private reports or moderation notes.
+
+### 15.4 Database Consistency
+
+- Posts use users, profiles and posts.
+- Images use post_media.
+- Comments use comments.
+- Likes use post_likes.
+- Follows use follows.
+- Hashtags use hashtags and post_hashtags.
+- Reports use post_reports.
+- Moderation audits use admin_audit_logs.
+- Use parameterized SQL queries.
+- Enforce unique constraints in MySQL.
+- Use transactions for related database writes.
+- Handle external file storage failures safely.
+
+### 15.5 Frontend Integration
+
+- Jan owns the Social Feed frontend.
+- Peak integrates profile follow controls.
+- Kin owns Social Feed backend APIs.
+- All endpoints use the /api/v1 prefix.
+- Share field names and response examples.
+- Frontend must handle loading and error states.
+- Frontend must send session cookies when required.
+- Backend authorization cannot rely on hidden buttons.
+
+### 15.6 Pending Before Implementation
+
+- Final CSRF protection mechanism
+- Session cookie and CORS configuration
+- Final upload and storage policy
+- Final text and media limits
+- Cursor pagination implementation
+- Final moderation and visibility policy
+- MySQL schema and index testing
+- Team API contract approval
+
+### 15.7 Review Conclusion
+
+- Endpoint documentation: Draft complete
+- Endpoint count verification: Pending local check
+- Request/response consistency: Requires final review
+- Security requirements: Documented as draft
+- Database integration: Not implemented
+- API integration tests: Not started
+
+This review does not mean the APIs are implemented
+or approved for production.

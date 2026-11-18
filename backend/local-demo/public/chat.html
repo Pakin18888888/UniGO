@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniGO! Direct — ห้องแชตเรียลไทม์ (IG Style)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+      background: #fafafa;
+      color: #262626;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* แถบนำทางด้านบนแบบเรียบง่าย */
+    .top-nav {
+      height: 52px;
+      background: #ffffff;
+      border-bottom: 1px solid #dbdbdb;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      background: linear-gradient(45deg, #f09433, #dc2743, #bc1888);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      color: #737373;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #262626;
+      font-weight: 600;
+    }
+
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .socket-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9ca3af;
+    }
+
+    .dot.online {
+      background: #22c55e;
+    }
+
+    /* กล่องหลักสไตล์ IG Direct */
+    .ig-container {
+      flex: 1;
+      max-width: 1120px;
+      width: 100%;
+      margin: 16px auto;
+      background: #ffffff;
+      border: 1px solid #dbdbdb;
+      border-radius: 12px;
+      display: flex;
+      overflow: hidden;
+      min-height: 0;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    /* แถบซ้าย: รายชื่อห้องแชต */
+    .sidebar {
+      width: 340px;
+      border-right: 1px solid #dbdbdb;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #efefef;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .user-switcher {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-switcher select {
+      border: 1px solid #dbdbdb;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #fafafa;
+      color: #262626;
+      cursor: pointer;
+      max-width: 195px;
+    }
+
+    .icon-btn {
+      border: none;
+      background: #f3f4f6;
+      color: #262626;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .icon-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .icon-btn.primary {
+      background: #0095f6;
+      color: #ffffff;
+    }
+
+    .icon-btn.primary:hover {
+      background: #1877f2;
+    }
+
+    .sidebar-search {
+      padding: 10px 16px;
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      background: #efefef;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .sidebar-title {
+      padding: 4px 16px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #262626;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .room-list {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .room-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .room-item:hover {
+      background: #fafafa;
+    }
+
+    .room-item.active {
+      background: #efefef;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 17px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    }
+
+    .avatar.small {
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+
+    .avatar.group {
+      background: linear-gradient(135deg, #0095f6, #5b51d8);
+    }
+
+    .room-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .room-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #262626;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-preview {
+      font-size: 13px;
+      color: #737373;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    /* ฝั่งขวา: หน้าต่างแชต */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: #ffffff;
+    }
+
+    .chat-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid #dbdbdb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 68px;
+    }
+
+    .chat-header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .chat-header-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .chat-header-sub {
+      font-size: 12px;
+      color: #737373;
+      margin-top: 2px;
+    }
+
+    .tester-toggle-btn {
+      border: 1px solid #dbdbdb;
+      background: #ffffff;
+      color: #262626;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tester-toggle-btn.active {
+      background: #111827;
+      color: #ffffff;
+      border-color: #111827;
+    }
+
+    /* พื้นที่ข้อความแชต */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #ffffff;
+    }
+
+    .empty-state {
+      margin: auto;
+      text-align: center;
+      color: #737373;
+      max-width: 320px;
+    }
+
+    .empty-state .big-icon {
+      font-size: 46px;
+      margin-bottom: 10px;
+    }
+
+    .empty-state h3 {
+      color: #262626;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: 72%;
+    }
+
+    .msg-row.me {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .msg-row.other {
+      align-self: flex-start;
+    }
+
+    .msg-content-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .msg-row.me .msg-content-wrap {
+      align-items: flex-end;
+    }
+
+    .msg-sender {
+      font-size: 11px;
+      color: #737373;
+      padding-left: 10px;
+    }
+
+    .bubble {
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .msg-row.me .bubble {
+      background: linear-gradient(135deg, #3797f0, #5b51d8);
+      color: #ffffff;
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg-row.other .bubble {
+      background: #efefef;
+      color: #262626;
+      border-bottom-left-radius: 6px;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: #a3a3a3;
+      padding: 0 6px;
+    }
+
+    /* ตัวเทสจำลองคุย 2 ฝั่ง (ซ่อน/แสดงได้) */
+    .tester-box {
+      background: #f8fafc;
+      border-top: 1px dashed #cbd5e1;
+      padding: 12px 18px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tester-box.open {
+      display: flex;
+    }
+
+    .tester-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: #334155;
+    }
+
+    .tester-top select {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #ffffff;
+    }
+
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .quick-chip {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .quick-chip:hover {
+      background: #e2e8f0;
+    }
+
+    .tester-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tester-form input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .tester-form button {
+      border: none;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ช่องพิมพ์ข้อความหลักสไตล์ IG */
+    .composer {
+      padding: 12px 18px 16px;
+      background: #ffffff;
+    }
+
+    .composer-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid #dbdbdb;
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+
+    .composer-pill input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      padding: 6px 0;
+      background: transparent;
+    }
+
+    .composer-pill button {
+      border: none;
+      background: transparent;
+      color: #0095f6;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .composer-pill button:disabled {
+      color: #b2dffc;
+      cursor: not-allowed;
+    }
+
+    /* Modal สร้างห้องใหม่ */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      width: 400px;
+      max-width: 92vw;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid #efefef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .modal-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #efefef;
+    }
+
+    .modal-section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .modal-body select,
+    .modal-body input[type="text"] {
+      padding: 8px 10px;
+      border: 1px solid #dbdbdb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .checkbox-list label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .ig-container {
+        margin: 0;
+        border-radius: 0;
+        border: none;
+      }
+      .sidebar {
+        width: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- แถบนำทาง -->
+  <header class="top-nav">
+    <div class="top-nav-left">
+      <a class="brand" href="/">UniGO! Direct</a>
+      <nav class="nav-links">
+        <a href="/">หน้าหลัก</a>
+        <a href="/universities.html">ข้อมูลมหาวิทยาลัย</a>
+        <a href="/exams.html">คลังแนวข้อสอบ</a>
+        <a href="/chat.html" class="active">ห้องแชต</a>
+      </nav>
+    </div>
+    <div class="top-nav-right">
+      <span class="socket-pill">
+        <span id="socket-dot" class="dot"></span>
+        <span id="socket-text">กำลังเชื่อมต่อ...</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- กล่องหลักสไตล์ IG Direct -->
+  <main class="ig-container">
+    <!-- ฝั่งซ้าย: รายชื่อแชต -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="user-switcher">
+          <select id="demo-user-select" title="สลับผู้ใช้จำลอง"></select>
+        </div>
+        <button type="button" id="open-new-chat-btn" class="icon-btn primary">+ แชตใหม่</button>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" id="room-search-input" placeholder="ค้นหาแชต..." />
+      </div>
+
+      <div class="sidebar-title">
+        <span>ข้อความ</span>
+        <button type="button" id="refresh-rooms-btn" class="icon-btn" style="padding: 3px 8px; font-size: 11px;">รีเฟรช</button>
+      </div>
+
+      <ul id="room-list" class="room-list"></ul>
+    </aside>
+
+    <!-- ฝั่งขวา: หน้าต่างสนทนา -->
+    <section class="chat-panel">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div id="active-avatar" class="avatar" style="width: 40px; height: 40px; font-size: 15px;">💬</div>
+          <div>
+            <div id="active-room-title" class="chat-header-title">เลือกห้องแชตทางด้านซ้าย</div>
+            <div id="active-room-sub" class="chat-header-sub">เริ่มสนทนากับรุ่นพี่หรือเพื่อนใน UniGO!</div>
+          </div>
+        </div>
+        <button type="button" id="toggle-tester-btn" class="tester-toggle-btn active" disabled>
+          🧪 ตัวเทสคุย 2 ฝั่ง: เปิดอยู่
+        </button>
+      </div>
+
+      <!-- พื้นที่ข้อความ -->
+      <div id="messages-area" class="messages-area">
+        <div class="empty-state">
+          <div class="big-icon">💬</div>
+          <h3>ข้อความของคุณ</h3>
+          <p>เลือกห้องแชตทางด้านซ้าย หรือกดปุ่ม <strong>+ แชตใหม่</strong> เพื่อเริ่มคุยกับรุ่นพี่และเพื่อน ๆ ได้เลย</p>
+        </div>
+      </div>
+
+      <!-- ตัวเทสสำหรับลองพิมพ์โต้ตอบจากฝั่งคู่สนทนา (แสดงได้ทันทีในหน้าเดียว!) -->
+      <div id="tester-box" class="tester-box">
+        <div class="tester-top">
+          <div>
+            <strong>🧪 ตัวเทสจำลองอีกฝั่งตอบกลับ (Real-time Socket + MySQL):</strong>
+            ตอบกลับในชื่อ
+            <select id="sim-sender-select"></select>
+          </div>
+          <small>ข้อความที่ส่งจากช่องนี้จะเด้งเข้าแชตฝั่งซ้ายแบบสด ๆ ทันที</small>
+        </div>
+
+        <div class="quick-replies">
+          <button type="button" class="quick-chip" data-text="ได้เลยครับ อยากถามเรื่องมหาวิทยาลัย คณะ หรือสาขาไหน บอกมาได้เลย!">💬 ถามเรื่องคณะ/สาขาได้เลย</button>
+          <button type="button" class="quick-chip" data-text="รอบ Portfolio แนะนำให้ใส่โปรเจกต์ที่ทำเองจริง ๆ พร้อมลิงก์ผลงานหรือ GitHub ครับ">📁 แนะนำพอร์ต</button>
+          <button type="button" class="quick-chip" data-text="สู้ ๆ นะครับ ขอให้ติดคณะที่ตั้งใจไว้นะ! 🎓">🎓 ส่งกำลังใจ</button>
+        </div>
+
+        <form id="sim-reply-form" class="tester-form">
+          <input type="text" id="sim-reply-input" placeholder="ลองพิมพ์ข้อความในนามคู่สนทนา แล้วกด Enter..." maxlength="2000" />
+          <button type="submit">ส่งในนามอีกฝั่ง</button>
+        </form>
+      </div>
+
+      <!-- ช่องพิมพ์ข้อความของผู้ใช้ปัจจุบัน -->
+      <div class="composer">
+        <form id="send-message-form" class="composer-pill">
+          <input
+            type="text"
+            id="message-input"
+            placeholder="พิมพ์ข้อความ..."
+            maxlength="2000"
+            autocomplete="off"
+            disabled
+          />
+          <button type="submit" id="send-btn" disabled>ส่ง</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal สร้างแชตใหม่ -->
+  <div id="new-chat-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <span>ข้อความใหม่</span>
+        <button type="button" id="close-modal-btn" class="icon-btn">ปิด</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <strong>แชต 1-ต่อ-1 (Direct Message)</strong>
+          <select id="target-user-select"></select>
+          <button type="button" id="create-direct-btn" class="icon-btn primary">เริ่มคุย 1-ต่อ-1</button>
+        </div>
+
+        <div class="modal-section">
+          <strong>สร้างแชตกลุ่ม</strong>
+          <input type="text" id="group-name-input" placeholder="ชื่อกลุ่ม เช่น ติวสอบเข้ามหาลัย TCAS" />
+          <div id="group-members-checkboxes" class="checkbox-list"></div>
+          <button type="button" id="create-group-btn" class="icon-btn primary">สร้างห้องกลุ่ม</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const demoUserSelect = document.getElementById('demo-user-select');
+    const roomSearchInput = document.getElementById('room-search-input');
+    const refreshRoomsBtn = document.getElementById('refresh-rooms-btn');
+    const roomListEl = document.getElementById('room-list');
+    const activeAvatarEl = document.getElementById('active-avatar');
+    const activeRoomTitleEl = document.getElementById('active-room-title');
+    const activeRoomSubEl = document.getElementById('active-room-sub');
+    const messagesAreaEl = document.getElementById('messages-area');
+    const sendMessageForm = document.getElementById('send-message-form');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const socketDot = document.getElementById('socket-dot');
+    const socketText = document.getElementById('socket-text');
+
+    // ตัวเทสคุย 2 ฝั่ง
+    const toggleTesterBtn = document.getElementById('toggle-tester-btn');
+    const testerBox = document.getElementById('tester-box');
+    const simSenderSelect = document.getElementById('sim-sender-select');
+    const simReplyForm = document.getElementById('sim-reply-form');
+    const simReplyInput = document.getElementById('sim-reply-input');
+
+    // Modal สร้างห้องใหม่
+    const newChatModal = document.getElementById('new-chat-modal');
+    const openNewChatBtn = document.getElementById('open-new-chat-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const targetUserSelect = document.getElementById('target-user-select');
+    const createDirectBtn = document.getElementById('create-direct-btn');
+    const groupNameInput = document.getElementById('group-name-input');
+    const groupMembersCheckboxes = document.getElementById('group-members-checkboxes');
+    const createGroupBtn = document.getElementById('create-group-btn');
+
+    let allUsers = [];
+    let allRooms = [];
+    let currentUserId = null;
+    let activeRoom = null;
+    let socket = null;
+    let testerEnabled = true;
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
+    function formatTime(isoString) {
+      if (!isoString) return '';
+      const d = new Date(isoString);
+      return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getInitial(name) {
+      if (!name) return '?';
+      return String(name).trim().charAt(0).toUpperCase();
+    }
+
+    function getRoomDisplayName(room) {
+      if (room.room_type === 'group' && room.name) return room.name;
+      const others = (room.participants || []).filter((p) => p.user_id !== currentUserId);
+      if (others.length > 0) return others.map((p) => p.display_name).join(', ');
+      return `ห้อง #${room.id}`;
+    }
+
+    function connectSocket() {
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+      }
+
+      socket = io({ withCredentials: true });
+
+      socket.on('connect', () => {
+        socketDot.classList.add('online');
+        socketText.textContent = 'ออนไลน์ (Socket.IO)';
+        if (activeRoom) {
+          socket.emit('chat:join', { roomId: activeRoom.id });
+        }
+      });
+
+      socket.on('disconnect', () => {
+        socketDot.classList.remove('online');
+        socketText.textContent = 'ตัดการเชื่อมต่อ';
+      });
+
+      socket.on('chat:message', (msg) => {
+        if (activeRoom && Number(msg.room_id) === Number(activeRoom.id)) {
+          appendMessage(msg);
+        }
+        loadRooms();
+      });
+
+      socket.on('chat:error', (err) => {
+        alert(`Chat Error [${err.code}]: ${err.message}`);
+      });
+    }
+
+    function appendMessage(msg) {
+      // ลบ empty-state ถ้ามีอยู่
+      const empty = messagesAreaEl.querySelector('.empty-state');
+      if (empty) empty.remove();
+
+      const isMe = Number(msg.sender_id) === Number(currentUserId);
+      const row = document.createElement('div');
+      row.className = `msg-row ${isMe ? 'me' : 'other'}`;
+
+      const avatarHtml = isMe
+        ? ''
+        : `<div class="avatar small">${escapeHtml(getInitial(msg.sender_name))}</div>`;
+
+      const senderLabel =
+        !isMe && activeRoom?.room_type === 'group'
+          ? `<div class="msg-sender">${escapeHtml(msg.sender_name)}</div>`
+          : '';
+
+      row.innerHTML = `
+        ${avatarHtml}
+        <div class="msg-content-wrap">
+          ${senderLabel}
+          <div class="bubble">${escapeHtml(msg.content)}</div>
+          <div class="msg-time">${formatTime(msg.created_at)}</div>
+        </div>
+      `;
+
+      messagesAreaEl.appendChild(row);
+      messagesAreaEl.scrollTop = messagesAreaEl.scrollHeight;
+    }
+
+    function renderUserControls() {
+      demoUserSelect.innerHTML = allUsers
+        .map(
+          (u) =>
+            `<option value="${u.id}" ${u.id === currentUserId ? 'selected' : ''}>👤 ${escapeHtml(u.display_name)}</option>`
+        )
+        .join('');
+
+      const otherUsers = allUsers.filter((u) => u.id !== currentUserId);
+      targetUserSelect.innerHTML = otherUsers
+        .map((u) => `<option value="${u.id}">${escapeHtml(u.display_name)}</option>`)
+        .join('');
+
+      groupMembersCheckboxes.innerHTML = otherUsers
+        .map(
+          (u) => `
+          <label>
+            <input type="checkbox" class="group-member-cb" value="${u.id}" />
+            <span>${escapeHtml(u.display_name)}</span>
+          </label>
+        `
+        )
+        .join('');
+    }
+
+    function renderRoomList() {
+      const keyword = roomSearchInput.value.trim().toLowerCase();
+      const filtered = allRooms.filter((r) =>
+        getRoomDisplayName(r).toLowerCase().includes(keyword)
+      );
+
+      if (filtered.length === 0) {
+        roomListEl.innerHTML =
+          '<li style="padding: 20px; text-align: center; color: #737373; font-size: 13px;">ไม่พบห้องแชต ลองกด "+ แชตใหม่" ด้านบน</li>';
+        return;
+      }
+
+      roomListEl.innerHTML = filtered
+        .map((room) => {
+          const title = getRoomDisplayName(room);
+          const isGroup = room.room_type === 'group';
+          const isActive = activeRoom && Number(room.id) === Number(activeRoom.id);
+          const preview = room.last_message
+            ? `${room.last_message.sender_id === currentUserId ? 'คุณ: ' : ''}${room.last_message.content}`
+            : 'เริ่มส่งข้อความแรก...';
+
+          return `
+            <li class="room-item ${isActive ? 'active' : ''}" data-room-id="${room.id}">
+              <div class="avatar ${isGroup ? 'group' : ''}">${isGroup ? '👥' : escapeHtml(getInitial(title))}</div>
+              <div class="room-info">
+                <div class="room-name">${escapeHtml(title)}</div>
+                <div class="room-preview">${escapeHtml(preview)}</div>
+              </div>
+            </li>
+          `;
+        })
+        .join('');
+
+      roomListEl.querySelectorAll('.room-item').forEach((item) => {
+        item.addEventListener('click', () => {
+          const id = Number(item.dataset.roomId);
+          const room = allRooms.find((r) => r.id === id);
+          if (room) openRoom(room);
+        });
+      });
+    }
+
+    function updateTesterPanel() {
+      if (!activeRoom) {
+        testerBox.classList.remove('open');
+        toggleTesterBtn.disabled = true;
+        return;
+      }
+
+      const otherMembers = (activeRoom.participants || []).filter(
+        (p) => Number(p.user_id) !== Number(currentUserId)
+      );
+
+      if (otherMembers.length === 0) {
+        testerBox.classList.remove('open');
+        toggleTesterBtn.disabled = true;
+        return;
+      }
+
+      toggleTesterBtn.disabled = false;
+      simSenderSelect.innerHTML = otherMembers
+        .map((p) => `<option value="${p.user_id}">${escapeHtml(p.display_name)}</option>`)
+        .join('');
+
+      if (testerEnabled) {
+        testerBox.classList.add('open');
+        toggleTesterBtn.classList.add('active');
+        toggleTesterBtn.textContent = '🧪 ตัวเทสคุย 2 ฝั่ง: เปิดอยู่';
+      } else {
+        testerBox.classList.remove('open');
+        toggleTesterBtn.classList.remove('active');
+        toggleTesterBtn.textContent = '🧪 เปิดตัวเทสคุย 2 ฝั่ง';
+      }
+    }
+
+    async function loadRooms({ autoSelectFirst = false } = {}) {
+      const res = await fetch('/api/v1/chat/rooms', { credentials: 'include' });
+      const json = await res.json();
+      if (!json.success) return;
+
+      allRooms = json.data.rooms || [];
+
+      // อัปเดตข้อมูล activeRoom ให้สดใหม่เสมอ
+      if (activeRoom) {
+        const refreshed = allRooms.find((r) => r.id === activeRoom.id);
+        if (refreshed) activeRoom = refreshed;
+      }
+
+      renderRoomList();
+
+      if (autoSelectFirst && !activeRoom && allRooms.length > 0) {
+        await openRoom(allRooms[0]);
+      }
+    }
+
+    async function openRoom(room) {
+      activeRoom = room;
+      const title = getRoomDisplayName(room);
+      const isGroup = room.room_type === 'group';
+
+      activeAvatarEl.className = `avatar ${isGroup ? 'group' : ''}`;
+      activeAvatarEl.textContent = isGroup ? '👥' : getInitial(title);
+      activeRoomTitleEl.textContent = title;
+      activeRoomSubEl.textContent = isGroup
+        ? `สมาชิก ${(room.participants || []).length} คน: ${(room.participants || []).map((p) => p.display_name).join(', ')}`
+        : 'แชตส่วนตัว (1-ต่อ-1) • กำลังใช้งาน';
+
+      renderRoomList();
+      updateTesterPanel();
+
+      messagesAreaEl.innerHTML = '<div class="empty-state"><p>กำลังโหลดประวัติข้อความ...</p></div>';
+
+      const res = await fetch(`/api/v1/chat/rooms/${room.id}/messages?limit=50`, {
+        credentials: 'include',
+      });
+      const json = await res.json();
+
+      if (!json.success) {
+        messagesAreaEl.innerHTML = `<div class="empty-state"><p>${escapeHtml(json.error?.message)}</p></div>`;
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        return;
+      }
+
+      messagesAreaEl.innerHTML = '';
+      const messages = json.data.messages || [];
+      if (messages.length === 0) {
+        messagesAreaEl.innerHTML = `
+          <div class="empty-state">
+            <div class="big-icon">👋</div>
+            <h3>เริ่มบทสนทนา</h3>
+            <p>ส่งข้อความแรกด้านล่าง หรือลองใช้ <strong>🧪 ตัวเทสคุย 2 ฝั่ง</strong> พิมพ์โต้ตอบได้เลย!</p>
+          </div>
+        `;
+      } else {
+        messages.forEach(appendMessage);
+      }
+
+      if (socket && socket.connected) {
+        socket.emit('chat:join', { roomId: room.id });
+      }
+
+      messageInput.disabled = false;
+      sendBtn.disabled = false;
+      messageInput.focus();
+    }
+
+    async function switchDemoUser(userId) {
+      const res = await fetch('/api/local-demo/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId: Number(userId) }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        alert(json.error?.message || 'สลับผู้ใช้ไม่สำเร็จ');
+        return;
+      }
+
+      currentUserId = json.data.user.id;
+      activeRoom = null;
+      activeRoomTitleEl.textContent = 'เลือกห้องแชตทางด้านซ้าย';
+      activeRoomSubEl.textContent = 'เริ่มสนทนากับรุ่นพี่หรือเพื่อนใน UniGO!';
+      messagesAreaEl.innerHTML = `
+        <div class="empty-state">
+          <div class="big-icon">💬</div>
+          <h3>ข้อความของคุณ</h3>
+          <p>เลือกห้องแชตทางด้านซ้ายเพื่อเริ่มคุยได้เลย</p>
+        </div>
+      `;
+      messageInput.disabled = true;
+      sendBtn.disabled = true;
+      updateTesterPanel();
+
+      renderUserControls();
+      connectSocket();
+      await loadRooms({ autoSelectFirst: true });
+    }
+
+    async function loadDemoUsers() {
+      const res = await fetch('/api/local-demo/users', { credentials: 'include' });
+      const json = await res.json();
+      if (!json.success) return;
+
+      allUsers = json.data.users || [];
+      currentUserId = json.data.currentUserId;
+
+      if (!currentUserId && allUsers.length > 0) {
+        await switchDemoUser(allUsers[0].id);
+        return;
+      }
+
+      renderUserControls();
+      connectSocket();
+      await loadRooms({ autoSelectFirst: true });
+    }
+
+    async function sendSimulatedReply(text) {
+      if (!activeRoom) return;
+      const senderId = Number(simSenderSelect.value);
+      const content = text.trim();
+      if (!senderId || !content) return;
+
+      const res = await fetch('/api/local-demo/simulate-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: activeRoom.id, senderId, content }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        alert(json.error?.message || 'จำลองการตอบกลับไม่สำเร็จ');
+      }
+    }
+
+    // Event Listeners
+    demoUserSelect.addEventListener('change', () => switchDemoUser(demoUserSelect.value));
+    roomSearchInput.addEventListener('input', renderRoomList);
+    refreshRoomsBtn.addEventListener('click', () => loadRooms());
+
+    toggleTesterBtn.addEventListener('click', () => {
+      testerEnabled = !testerEnabled;
+      updateTesterPanel();
+    });
+
+    sendMessageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!activeRoom || !socket) return;
+      const content = messageInput.value.trim();
+      if (!content) return;
+
+      socket.emit('chat:send', { roomId: activeRoom.id, content }, (ack) => {
+        if (ack && !ack.success) {
+          alert(ack.error?.message || 'ส่งข้อความไม่สำเร็จ');
+        }
+      });
+
+      messageInput.value = '';
+      messageInput.focus();
+    });
+
+    simReplyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = simReplyInput.value.trim();
+      if (!content) return;
+      simReplyInput.value = '';
+      await sendSimulatedReply(content);
+      simReplyInput.focus();
+    });
+
+    document.querySelectorAll('.quick-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        sendSimulatedReply(btn.dataset.text);
+      });
+    });
+
+    // Modal handlers
+    openNewChatBtn.addEventListener('click', () => newChatModal.classList.add('open'));
+    closeModalBtn.addEventListener('click', () => newChatModal.classList.remove('open'));
+    newChatModal.addEventListener('click', (e) => {
+      if (e.target === newChatModal) newChatModal.classList.remove('open');
+    });
+
+    createDirectBtn.addEventListener('click', async () => {
+      const targetUserId = Number(targetUserSelect.value);
+      if (!targetUserId) return;
+
+      const res = await fetch('/api/v1/chat/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ roomType: 'direct', targetUserId }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        alert(json.error?.message || 'สร้างห้องไม่สำเร็จ');
+        return;
+      }
+
+      newChatModal.classList.remove('open');
+      await loadRooms();
+      const createdOrFound = allRooms.find((r) => r.id === json.data.room.id) || json.data.room;
+      await openRoom(createdOrFound);
+    });
+
+    createGroupBtn.addEventListener('click', async () => {
+      const name = groupNameInput.value.trim();
+      const checked = Array.from(document.querySelectorAll('.group-member-cb:checked')).map((el) =>
+        Number(el.value)
+      );
+      if (!name) return alert('กรุณากรอกชื่อกลุ่ม');
+      if (checked.length === 0) return alert('กรุณาเลือกสมาชิกอย่างน้อย 1 คน');
+
+      const res = await fetch('/api/v1/chat/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ roomType: 'group', name, participantIds: checked }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        alert(json.error?.message || 'สร้างกลุ่มไม่สำเร็จ');
+        return;
+      }
+
+      groupNameInput.value = '';
+      newChatModal.classList.remove('open');
+      await loadRooms();
+      const created = allRooms.find((r) => r.id === json.data.room.id) || json.data.room;
+      await openRoom(created);
+    });
+
+    loadDemoUsers();
+  </script>
+</body>
+</html>

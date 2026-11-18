@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniGO! — ศูนย์รวมระบบส่วนของบอล</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Roboto, sans-serif;
+      background: #f4f6fb;
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero {
+      background: linear-gradient(125deg, #142850 0%, #1e3a8a 60%, #f36f21 100%);
+      color: #ffffff;
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      opacity: 0.9;
+      font-size: 15px;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 1020px;
+      width: 100%;
+      margin: -28px auto 40px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+    }
+
+    .icon {
+      font-size: 34px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #142850;
+    }
+
+    .card p {
+      font-size: 13.5px;
+      color: #4b5563;
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .cta {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <h1>🎓 UniGO! Community Platform</h1>
+    <p>หน้าทดลองใช้งานระบบ Backend ส่วนของบอล (เชื่อมต่อ MySQL + REST API + Socket.IO จริงครบทั้ง 3 ระบบ)</p>
+  </header>
+
+  <main class="container">
+    <a class="card" href="/universities.html">
+      <div class="icon">🏛️</div>
+      <h2>ข้อมูลมหาวิทยาลัย คณะ และสาขา (สไตล์ TCAS)</h2>
+      <p>ค้นหาข้อมูลมหาวิทยาลัย คณะ และสาขาวิชาจากฐานข้อมูลจริง พร้อมค่าเทอม รอบรับสมัคร TCAS 1–4 และเกณฑ์คะแนน (รองรับการเพิ่มข้อมูลในอนาคต)</p>
+      <span class="cta">เปิดหน้าข้อมูลมหาวิทยาลัย →</span>
+    </a>
+
+    <a class="card" href="/exams.html">
+      <div class="icon">📝</div>
+      <h2>คลังแนวข้อสอบ (สไตล์ TCAS Blueprint)</h2>
+      <p>รวมแนวข้อสอบและโครงสร้างข้อสอบจริง TGAT, TPAT, A-Level (ทปอ.), IELTS และ Digital SAT กดเปิดดูจริงได้ทันที</p>
+      <span class="cta">เปิดคลังข้อสอบ →</span>
+    </a>
+
+    <a class="card" href="/chat.html">
+      <div class="icon">💬</div>
+      <h2>ห้องแชตเรียลไทม์ (สไตล์ IG Direct)</h2>
+      <p>แชต 1-ต่อ-1 และกลุ่มแบบเรียลไทม์ผ่าน Socket.IO พร้อมตัวเทสจำลองคุย 2 ฝั่งในหน้าเดียวและบันทึกประวัติลง MySQL
+      </p>
+      <span class="cta">เปิดห้องแชต →</span>
+    </a>
+  </main>
+</body>
+
+</html>

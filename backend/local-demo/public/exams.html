@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>คลังแนวข้อสอบ & Exam Blueprint สไตล์ TCAS | UniGO!</title>
+  <style>
+    :root {
+      --tcas-navy: #142850;
+      --tcas-blue: #2563eb;
+      --tcas-teal: #0d9488;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* แถบนำทาง */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .brand {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--tcas-navy);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand span {
+      background: var(--tcas-blue);
+      color: #ffffff;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .nav-links a:hover {
+      background: #f3f4f6;
+      color: var(--text);
+    }
+
+    .nav-links a.active {
+      background: #dbeafe;
+      color: var(--tcas-blue);
+      font-weight: 700;
+    }
+
+    /* Hero Banner สไตล์ MyTCAS Blueprint */
+    .hero {
+      background: linear-gradient(125deg, #0f172a 0%, #1e3a8a 55%, #0d9488 100%);
+      color: #ffffff;
+      padding: 36px 24px 56px;
+    }
+
+    .hero-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .hero p {
+      font-size: 14px;
+      opacity: 0.9;
+      max-width: 700px;
+    }
+
+    /* เนื้อหาหลัก */
+    .main-wrap {
+      max-width: 1120px;
+      margin: -30px auto 48px;
+      padding: 0 20px;
+    }
+
+    .filter-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      margin-bottom: 22px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .search-row input {
+      flex: 1;
+      min-width: 240px;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-row input:focus {
+      border-color: var(--tcas-blue);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--tcas-blue);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-outline {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: #f9fafb;
+    }
+
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cat-tab {
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: #374151;
+      padding: 7px 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .cat-tab:hover {
+      border-color: var(--tcas-blue);
+      color: var(--tcas-blue);
+    }
+
+    .cat-tab.active {
+      background: var(--tcas-navy);
+      color: #ffffff;
+      border-color: var(--tcas-navy);
+    }
+
+    .result-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* การ์ดข้อสอบสไตล์ TCAS Blueprint Grid */
+    .exam-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .exam-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .exam-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+    }
+
+    .exam-top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .cat-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .cat-tgat { background: #ccfbf1; color: #0f766e; }
+    .cat-tpat { background: #ffedd5; color: #c2410c; }
+    .cat-a-level { background: #dbeafe; color: #1d4ed8; }
+    .cat-ielts { background: #ede9fe; color: #6d28d9; }
+    .cat-sat { background: #e0e7ff; color: #4338ca; }
+
+    .diff-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .diff-easy { background: #dcfce7; color: #15803d; }
+    .diff-medium { background: #fef3c7; color: #b45309; }
+    .diff-hard { background: #fee2e2; color: #b91c1c; }
+
+    .exam-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 6px;
+    }
+
+    .exam-subject {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .exam-summary {
+      font-size: 13px;
+      color: #4b5563;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .exam-stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #374151;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+
+    .exam-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .exam-actions .btn {
+      flex: 1;
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    /* Pagination */
+    .pagination {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Modal รายละเอียดข้อสอบ */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      width: 560px;
+      max-width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+      background: var(--tcas-navy);
+      color: #ffffff;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-close {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .modal-stat-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .modal-stat-box small {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .modal-stat-box strong {
+      font-size: 15px;
+      color: var(--tcas-navy);
+    }
+
+    .empty-box {
+      grid-column: 1 / -1;
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="nav-left">
+      <a class="brand" href="/">UniGO! <span>Blueprint</span></a>
+      <nav class="nav-links">
+        <a href="/">หน้าหลัก</a>
+        <a href="/universities.html">ข้อมูลมหาวิทยาลัย</a>
+        <a href="/exams.html" class="active">คลังแนวข้อสอบ</a>
+        <a href="/chat.html">ห้องแชต</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">📝 Official Exam Blueprint & Practice Hub</div>
+      <h1>คลังแนวข้อสอบและโครงสร้างข้อสอบ TCAS</h1>
+      <p>รวมโครงสร้างข้อสอบจริงจาก ทปอ. (TGAT, TPAT, A-Level) พร้อมข้อสอบจำลองทางการ IELTS และ Digital SAT กดเปิดดูแนวข้อสอบจริงได้ทันที</p>
+    </div>
+  </section>
+
+  <main class="main-wrap">
+    <section class="filter-card">
+      <form id="exam-filter-form" class="search-row">
+        <input
+          type="text"
+          id="exam-search"
+          placeholder="🔍 ค้นหาวิชาหรือรหัสข้อสอบ เช่น TPAT3, คณิตศาสตร์, ฟิสิกส์, IELTS..."
+        />
+        <button type="submit" class="btn btn-primary">ค้นหาข้อสอบ</button>
+        <button type="button" id="exam-reset-btn" class="btn btn-outline">ล้างตัวกรอง</button>
+      </form>
+
+      <div id="category-tabs" class="category-tabs">
+        <button type="button" class="cat-tab active" data-slug="">ทั้งหมด</button>
+      </div>
+    </section>
+
+    <div class="result-bar">
+      <span id="exam-summary-text">กำลังโหลดคลังข้อสอบ...</span>
+      <span>เชื่อมต่อ MySQL จริงผ่าน `/api/v1/exams`</span>
+    </div>
+
+    <section id="exam-grid" class="exam-grid"></section>
+
+    <div class="pagination">
+      <button type="button" id="prev-page-btn" class="btn btn-outline">← หน้าก่อนหน้า</button>
+      <span id="page-info" style="font-size: 14px; font-weight: 600;">หน้า 1 / 1</span>
+      <button type="button" id="next-page-btn" class="btn btn-outline">หน้าถัดไป →</button>
+    </div>
+  </main>
+
+  <!-- Modal แสดงรายละเอียดข้อสอบ -->
+  <div id="exam-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <strong id="modal-category-title">รายละเอียดชุดข้อสอบ</strong>
+        <button type="button" id="close-modal-btn" class="modal-close">✕ ปิด</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const examSearch = document.getElementById('exam-search');
+    const examFilterForm = document.getElementById('exam-filter-form');
+    const examResetBtn = document.getElementById('exam-reset-btn');
+    const categoryTabsEl = document.getElementById('category-tabs');
+    const examSummaryText = document.getElementById('exam-summary-text');
+    const examGrid = document.getElementById('exam-grid');
+    const prevPageBtn = document.getElementById('prev-page-btn');
+    const nextPageBtn = document.getElementById('next-page-btn');
+    const pageInfo = document.getElementById('page-info');
+    const examModal = document.getElementById('exam-modal');
+    const modalCategoryTitle = document.getElementById('modal-category-title');
+    const modalBody = document.getElementById('modal-body');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    let selectedCategory = '';
+    let currentPage = 1;
+    let totalPages = 1;
+    let categoriesInitialized = false;
+
+    const DIFFICULTY_LABEL = {
+      easy: 'ง่าย',
+      medium: 'ปานกลาง',
+      hard: 'ยาก',
+    };
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '-';
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
+    async function loadExams(page = 1) {
+      currentPage = page;
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: '9',
+      });
+      if (selectedCategory) params.set('category', selectedCategory);
+      if (examSearch.value.trim()) params.set('q', examSearch.value.trim());
+
+      const res = await fetch(`/api/v1/exams?${params}`);
+      const json = await res.json();
+
+      if (!json.success) {
+        examGrid.innerHTML = `<div class="empty-box">เกิดข้อผิดพลาด: ${escapeHtml(json.error?.message)}</div>`;
+        return;
+      }
+
+      const { categories, items, pagination } = json.data;
+
+      if (!categoriesInitialized && Array.isArray(categories)) {
+        categoriesInitialized = true;
+        categoryTabsEl.innerHTML = [
+          '<button type="button" class="cat-tab active" data-slug="">ทั้งหมด</button>',
+          ...categories.map(
+            (cat) =>
+              `<button type="button" class="cat-tab" data-slug="${escapeHtml(cat.slug)}">${escapeHtml(cat.name)}</button>`
+          ),
+        ].join('');
+
+        categoryTabsEl.querySelectorAll('.cat-tab').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            selectedCategory = btn.dataset.slug;
+            categoryTabsEl.querySelectorAll('.cat-tab').forEach((t) => t.classList.remove('active'));
+            btn.classList.add('active');
+            loadExams(1);
+          });
+        });
+      }
+
+      totalPages = pagination.totalPages || 1;
+      examSummaryText.textContent = `พบชุดข้อสอบทั้งหมด ${pagination.total} ชุด`;
+      pageInfo.textContent = `หน้า ${pagination.page} / ${totalPages}`;
+      prevPageBtn.disabled = pagination.page <= 1;
+      nextPageBtn.disabled = pagination.page >= totalPages;
+
+      if (items.length === 0) {
+        examGrid.innerHTML = '<div class="empty-box">ไม่พบข้อสอบที่ตรงกับเงื่อนไข ลองเลือกหมวดหมู่อื่นหรือล้างตัวกรองครับ</div>';
+        return;
+      }
+
+      examGrid.innerHTML = items
+        .map(
+          (exam) => `
+          <article class="exam-card">
+            <div>
+              <div class="exam-top-meta">
+                <span class="cat-pill cat-${escapeHtml(exam.category_slug)}">${escapeHtml(exam.category_name)}</span>
+                <span class="diff-badge diff-${escapeHtml(exam.difficulty)}">ความยาก: ${escapeHtml(DIFFICULTY_LABEL[exam.difficulty] || exam.difficulty)}</span>
+              </div>
+              <h2 class="exam-title">${escapeHtml(exam.title)}</h2>
+              <div class="exam-subject">📘 วิชา: ${escapeHtml(exam.subject)} • ปี พ.ศ. ${escapeHtml(exam.exam_year)}</div>
+              <p class="exam-summary">${escapeHtml(exam.summary)}</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div class="exam-stats">
+                <span>⏱️ ${exam.duration_minutes ? `${exam.duration_minutes} นาที` : '-'}</span>
+                <span>📋 ${exam.total_questions ? `${exam.total_questions} ข้อ` : '-'}</span>
+              </div>
+              <div class="exam-actions">
+                <button type="button" class="btn btn-outline" onclick="openExamDetail(${exam.id})">ดูรายละเอียด</button>
+                ${
+                  exam.file_url
+                    ? `<a class="btn btn-primary" href="${escapeHtml(exam.file_url)}" target="_blank" rel="noopener noreferrer">เปิดข้อสอบจริง ↗</a>`
+                    : ''
+                }
+              </div>
+            </div>
+          </article>
+        `
+        )
+        .join('');
+    }
+
+    async function openExamDetail(id) {
+      const res = await fetch(`/api/v1/exams/${id}`);
+      const json = await res.json();
+      if (!json.success) return alert(json.error?.message || 'โหลดข้อมูลไม่สำเร็จ');
+
+      const exam = json.data;
+      modalCategoryTitle.textContent = `${exam.category_name} • ${exam.subject}`;
+      modalBody.innerHTML = `
+        <div>
+          <h3 style="font-size:18px; color:#111827; margin-bottom:6px;">${escapeHtml(exam.title)}</h3>
+          <p style="font-size:14px; color:#4b5563;">${escapeHtml(exam.summary)}</p>
+        </div>
+
+        <div class="modal-grid">
+          <div class="modal-stat-box">
+            <small>เวลาทำข้อสอบ</small>
+            <strong>${exam.duration_minutes ? `${exam.duration_minutes} นาที` : '-'}</strong>
+          </div>
+          <div class="modal-stat-box">
+            <small>จำนวนข้อ</small>
+            <strong>${exam.total_questions ? `${exam.total_questions} ข้อ` : '-'}</strong>
+          </div>
+          <div class="modal-stat-box">
+            <small>ระดับความยาก</small>
+            <strong>${escapeHtml(DIFFICULTY_LABEL[exam.difficulty] || exam.difficulty)}</strong>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+          ${
+            exam.file_url
+              ? `<a class="btn btn-primary" href="${escapeHtml(exam.file_url)}" target="_blank" rel="noopener noreferrer">📄 เปิดดูโครงสร้างและตัวอย่างข้อสอบจริง ↗</a>`
+              : ''
+          }
+          ${
+            exam.answer_key_url
+              ? `<a class="btn btn-outline" href="${escapeHtml(exam.answer_key_url)}" target="_blank" rel="noopener noreferrer">📚 เปิดหน้าศูนย์รวม Blueprint / แหล่งฝึกทำเพิ่ม ↗</a>`
+              : ''
+          }
+        </div>
+      `;
+
+      examModal.classList.add('open');
+    }
+
+    window.openExamDetail = openExamDetail;
+
+    examFilterForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      loadExams(1);
+    });
+
+    examResetBtn.addEventListener('click', () => {
+      examSearch.value = '';
+      selectedCategory = '';
+      categoryTabsEl.querySelectorAll('.cat-tab').forEach((t, idx) => {
+        t.classList.toggle('active', idx === 0);
+      });
+      loadExams(1);
+    });
+
+    prevPageBtn.addEventListener('click', () => {
+      if (currentPage > 1) loadExams(currentPage - 1);
+    });
+
+    nextPageBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) loadExams(currentPage + 1);
+    });
+
+    closeModalBtn.addEventListener('click', () => examModal.classList.remove('open'));
+    examModal.addEventListener('click', (e) => {
+      if (e.target === examModal) examModal.classList.remove('open');
+    });
+
+    loadExams(1);
+  </script>
+</body>
+</html>

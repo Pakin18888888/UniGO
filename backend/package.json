@@ -1,0 +1,20 @@
+{
+  "name": "unigo-backend-ball-workspace",
+  "version": "1.0.0",
+  "description": "UniGO! Backend (ส่วนของบอล: University Explorer, Exam Library, Live Chat)",
+  "scripts": {
+    "db:setup": "node scripts/setup-local-db.js",
+    "db:test": "node scripts/test-db.js",
+    "db:seed:ball": "node scripts/run-sql.js",
+    "dev:demo": "node local-demo/dev-server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "mysql2": "^3.12.0",
+    "socket.io": "^4.8.1"
+  }
+}

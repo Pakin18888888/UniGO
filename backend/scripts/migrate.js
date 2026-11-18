@@ -12,10 +12,18 @@ dotenv.config({
     quiet: true
 });
 
+const DB_DIALECT = process.env.DB_DIALECT || 'mysql';
+
 const MIGRATION_DIR = path.resolve(
     __dirname,
-    '../../database/migrations'
+    DB_DIALECT === 'mariadb'
+        ? '../../database/migrations-mariadb'
+        : '../../database/migrations'
 );
+
+const DB_COLLATION = DB_DIALECT === 'mariadb'
+    ? 'utf8mb4_unicode_ci'
+    : 'utf8mb4_0900_ai_ci';
 
 const DB_NAME = process.env.DB_NAME;
 const DB_TARGET = process.env.DB_MIGRATION_TARGET;
@@ -58,6 +66,10 @@ function validateConfig() {
 
     if (!process.env.DB_USER) {
         throw new Error('DB_USER is missing.');
+    }
+
+    if (!['mysql', 'mariadb'].includes(DB_DIALECT)) {
+        throw new Error('Unsupported DB_DIALECT.');
     }
 }
 
@@ -173,16 +185,29 @@ async function runMigrations() {
             multipleStatements: false
         });
 
+
         const [dbRows] = await connection.query(
             'SELECT DATABASE() AS db, VERSION() AS version'
         );
 
+        // ตรวจชื่อ Database
         if (dbRows[0].db !== DB_NAME) {
             throw new Error('Connected to the wrong database.');
         }
 
+        // ตรวจว่าเป็น MariaDB จริงหรือไม่
+        if (
+            DB_DIALECT === 'mariadb' &&
+            !/mariadb/i.test(dbRows[0].version)
+        ) {
+            throw new Error(
+                'Wrong database server: expected MariaDB.'
+            );
+        }
+
         console.log(`Database: ${dbRows[0].db}`);
-        console.log(`MySQL: ${dbRows[0].version}`);
+        console.log(`Database Version: ${dbRows[0].version}`);
+
 
         // Prevent simultaneous migrations by two processes.
         const [lockRows] = await connection.query(
@@ -219,7 +244,7 @@ async function runMigrations() {
           PRIMARY KEY (file_name)
         ) ENGINE=InnoDB
         DEFAULT CHARACTER SET utf8mb4
-        COLLATE utf8mb4_0900_ai_ci
+        COLLATE ${DB_COLLATION}
       `);
 
             console.log('Created schema_migrations');

@@ -43,7 +43,7 @@
     .top-nav {
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 40;
       background: #ffffff;
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
@@ -103,69 +103,16 @@
       font-weight: 700;
     }
 
-    /* Hero Banner */
+    /* Hero Banner + ช่องค้นหามหาวิทยาลัยหลักสไตล์ MyTCAS */
     .hero {
-      background: linear-gradient(120deg, #0f172a 0%, #142850 48%, #2563eb 100%);
+      background: linear-gradient(120deg, #0f172a 0%, #142850 50%, #2563eb 100%);
       color: #ffffff;
-      padding: 32px 24px 56px;
+      padding: 34px 24px 58px;
     }
 
     .hero-inner {
       max-width: 1120px;
       margin: 0 auto;
-    }
-
-    .hero-top-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      color: #ffffff;
-      padding: 7px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.24);
-    }
-
-    .uni-switcher-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-    }
-
-    .uni-switcher-wrap select {
-      padding: 7px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      background: rgba(15, 23, 42, 0.55);
-      color: #ffffff;
-      font-size: 13px;
-      font-weight: 600;
-      max-width: 320px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .uni-switcher-wrap select option {
-      background: #ffffff;
-      color: var(--text);
     }
 
     .tcas-badge {
@@ -185,60 +132,231 @@
       font-size: 30px;
       font-weight: 800;
       letter-spacing: -0.3px;
-      margin-bottom: 4px;
-    }
-
-    .hero-en {
-      font-size: 15px;
-      opacity: 0.85;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
     }
 
     .hero-desc {
-      max-width: 780px;
-      font-size: 14px;
-      opacity: 0.92;
-      margin-bottom: 18px;
+      max-width: 760px;
+      font-size: 14.5px;
+      opacity: 0.9;
+      margin-bottom: 22px;
     }
 
-    .hero-stats {
+    /* กล่องเสิร์ชหลัก + Autocomplete (ใช้ได้ทั้งโหมดรวมและสลับมหาลัยในหน้าเดียว) */
+    .global-search-box {
+      position: relative;
+      max-width: 780px;
+    }
+
+    .global-search-input-wrap {
+      position: relative;
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
       align-items: center;
     }
 
-    .stat-pill {
-      background: rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      font-size: 17px;
+      pointer-events: none;
     }
 
-    .hero-link-btn {
-      margin-left: auto;
+    .global-search-input {
+      width: 100%;
+      padding: 15px 46px 15px 46px;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      font-size: 15.5px;
+      font-weight: 500;
       background: #ffffff;
-      color: var(--tcas-navy);
-      text-decoration: none;
-      padding: 9px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 700;
-      transition: transform 0.15s;
+      color: var(--text);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
-    .hero-link-btn:hover {
-      transform: translateY(-1px);
+    .global-search-input:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.3);
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #4b5563;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .clear-search-btn:hover {
+      background: #d1d5db;
+      color: #111827;
+    }
+
+    .autocomplete-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+      max-height: 360px;
+      overflow-y: auto;
+      z-index: 50;
+      padding: 6px;
+    }
+
+    .ac-item {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      padding: 11px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.12s;
+    }
+
+    .ac-item:hover,
+    .ac-item.highlighted {
+      background: var(--accent-soft);
+    }
+
+    .ac-item-main {
+      min-width: 0;
+    }
+
+    .ac-item-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--tcas-navy);
+    }
+
+    .ac-item-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ac-item-meta {
+      flex-shrink: 0;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--accent);
+      background: #eff6ff;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .ac-empty {
+      padding: 16px;
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    .search-hint {
+      margin-top: 10px;
+      font-size: 12.5px;
+      opacity: 0.85;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
     }
 
     /* เนื้อหาหลัก */
     .main-wrap {
       max-width: 1120px;
-      margin: -30px auto 48px;
+      margin: -28px auto 48px;
       padding: 0 20px;
+    }
+
+    /* การ์ดข้อมูลมหาวิทยาลัยที่เลือกอยู่ (โหมดหน้าเดียวจบ) */
+    .selected-uni-banner {
+      background: var(--card);
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      padding: 22px 24px;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+      margin-bottom: 18px;
+    }
+
+    .selected-uni-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .selected-uni-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .pill-badge.neutral {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .selected-uni-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--tcas-navy);
+      line-height: 1.3;
+    }
+
+    .selected-uni-en {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .selected-uni-desc {
+      font-size: 14px;
+      color: #4b5563;
+      margin-top: 10px;
+    }
+
+    .selected-uni-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
     }
 
     .filter-card {
@@ -247,7 +365,7 @@
       border-radius: 16px;
       padding: 18px 20px;
       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
 
     .search-row {
@@ -274,7 +392,7 @@
     }
 
     .province-wrap {
-      width: 190px;
+      width: 210px;
     }
 
     .search-input-wrap input:focus,
@@ -285,10 +403,14 @@
     .btn {
       border: none;
       border-radius: 10px;
-      padding: 10px 18px;
-      font-size: 14px;
+      padding: 10px 16px;
+      font-size: 13.5px;
       font-weight: 600;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn-primary {
@@ -298,6 +420,17 @@
 
     .btn-primary:hover {
       background: var(--accent-hover);
+    }
+
+    .btn-outline {
+      background: #ffffff;
+      color: var(--tcas-navy);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     .btn-ghost {
@@ -431,19 +564,10 @@
       border-top: 1px solid #f1f5f9;
     }
 
-    .uni-meta-badges {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .mini-badge {
+    .uni-region-tag {
       font-size: 12px;
       font-weight: 600;
-      padding: 3px 9px;
-      border-radius: 8px;
-      background: #f3f4f6;
-      color: #374151;
+      color: var(--muted);
     }
 
     .uni-open-cta {
@@ -465,7 +589,7 @@
       cursor: not-allowed;
     }
 
-    /* ส่วนแสดงแต่ละคณะ (Detail View) */
+    /* ส่วนแสดงแต่ละคณะ */
     .faculty-section {
       margin-bottom: 28px;
     }
@@ -491,15 +615,6 @@
       font-size: 13px;
       color: var(--muted);
       font-weight: 500;
-    }
-
-    .faculty-count-badge {
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 999px;
     }
 
     /* การ์ดสาขาวิชาสไตล์ TCAS */
@@ -680,70 +795,90 @@
     </div>
   </header>
 
-  <!-- Hero Banner (ปรับเนื้อหาแบบไดนามิกตามโหมด) -->
+  <!-- Hero + ช่องเสิร์ชค้นหามหาวิทยาลัยหลัก (Live Autocomplete + ใช้สลับมหาลัยได้ตลอดเวลา) -->
   <section class="hero">
-    <div class="hero-inner" id="hero-content">
-      <div class="tcas-badge">🎓 TCAS University Explorer • ข้อมูลมหาวิทยาลัย คณะ และสาขา</div>
-      <h1 class="hero-title">กำลังโหลดข้อมูลมหาวิทยาลัย...</h1>
+    <div class="hero-inner">
+      <div class="tcas-badge">🎓 TCAS University Explorer • ค้นหามหาวิทยาลัย คณะ และสาขา</div>
+      <h1 class="hero-title">ค้นหามหาวิทยาลัย คณะ และสาขาวิชา</h1>
+      <p class="hero-desc">
+        พิมพ์ชื่อมหาวิทยาลัยเพื่อเลือกดูคณะ สาขา ค่าเทอม และรอบรับสมัคร TCAS ได้ทันทีในหน้าเดียว
+        หรือเลือกดูจากรายชื่อมหาวิทยาลัยด้านล่าง (รองรับการเพิ่มมหาวิทยาลัย คณะ และสาขาในอนาคต)
+      </p>
+
+      <div class="global-search-box" id="global-search-box">
+        <div class="global-search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="global-uni-search"
+            class="global-search-input"
+            placeholder="พิมพ์ชื่อมหาวิทยาลัย หรือชื่อย่อ เช่น จุฬาฯ, ธรรมศาสตร์, เกษตร, เชียงใหม่..."
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            id="clear-global-search-btn"
+            class="clear-search-btn hidden"
+            title="ล้างคำค้นหา"
+          >✕</button>
+        </div>
+        <div id="autocomplete-menu" class="autocomplete-menu hidden" role="listbox"></div>
+        <div class="search-hint">
+          <span>💡 พิมพ์แล้วเลือกมหาวิทยาลัยจากรายการได้ทันที หรือกดลูกศร ↑ ↓ แล้วกด Enter</span>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- เนื้อหาหลัก -->
   <main class="main-wrap">
-    <!-- ========== โหมด 1: รายชื่อมหาวิทยาลัยทั้งหมด ========== -->
+    <!-- ========== โหมด 1: รายชื่อมหาวิทยาลัยทั้งหมด (Live Search + ตัวกรองประเภท/จังหวัด) ========== -->
     <div id="directory-view">
       <section class="filter-card">
-        <form id="uni-filter-form" class="search-row">
-          <div class="search-input-wrap">
-            <input
-              type="text"
-              id="uni-search-input"
-              placeholder="🔍 ค้นหาชื่อมหาวิทยาลัย หรือชื่อย่อ..."
-            />
-          </div>
+        <div class="search-row">
           <div class="province-wrap">
             <input
               type="text"
               id="uni-province-input"
               class="province-input"
-              placeholder="📍 จังหวัด (เช่น กรุงเทพ...)"
+              placeholder="📍 กรองตามจังหวัด..."
             />
           </div>
-          <button type="submit" class="btn btn-primary">ค้นหา</button>
+          <div id="uni-type-chips" class="chips-row" style="align-items: center; flex: 1;">
+            <button type="button" class="chip active" data-type="">ทุกประเภท</button>
+            <button type="button" class="chip" data-type="autonomous">ในกำกับของรัฐ</button>
+            <button type="button" class="chip" data-type="public">รัฐบาล</button>
+            <button type="button" class="chip" data-type="private">เอกชน</button>
+            <button type="button" class="chip" data-type="rajabhat">ราชภัฏ</button>
+            <button type="button" class="chip" data-type="rajamangala">ราชมงคล</button>
+          </div>
           <button type="button" id="uni-reset-btn" class="btn btn-ghost">ล้างตัวกรอง</button>
-        </form>
-
-        <div id="uni-type-chips" class="chips-row">
-          <button type="button" class="chip active" data-type="">ทุกประเภท</button>
-          <button type="button" class="chip" data-type="autonomous">ในกำกับของรัฐ</button>
-          <button type="button" class="chip" data-type="public">รัฐบาล</button>
-          <button type="button" class="chip" data-type="private">เอกชน</button>
-          <button type="button" class="chip" data-type="rajabhat">ราชภัฏ</button>
-          <button type="button" class="chip" data-type="rajamangala">ราชมงคล</button>
         </div>
       </section>
 
       <div class="result-bar">
-        <span id="uni-result-summary">กำลังโหลดรายชื่อมหาวิทยาลัย...</span>
-        <span id="uni-api-source">แหล่งข้อมูล: API `/api/v1/universities`</span>
+        <span id="uni-result-summary">รายชื่อมหาวิทยาลัย</span>
+        <span>แหล่งข้อมูล: API `/api/v1/universities`</span>
       </div>
 
       <div id="universities-grid" class="uni-grid"></div>
       <div id="uni-pagination" class="pagination-bar hidden"></div>
     </div>
 
-    <!-- ========== โหมด 2: รายละเอียดคณะและสาขาของมหาวิทยาลัยที่เลือก ========== -->
+    <!-- ========== โหมด 2: ข้อมูลคณะและสาขาของมหาวิทยาลัยที่เลือก (หน้าเดียวจบ) ========== -->
     <div id="detail-view" class="hidden">
+      <section id="selected-uni-banner" class="selected-uni-banner"></section>
+
       <section class="filter-card">
         <form id="program-filter-form" class="search-row">
           <div class="search-input-wrap">
             <input
               type="text"
               id="program-search-input"
-              placeholder="🔍 ค้นหาชื่อสาขาวิชาในมหาวิทยาลัยนี้..."
+              placeholder="🔍 พิมพ์ค้นหาชื่อสาขาวิชาในมหาวิทยาลัยนี้..."
+              autocomplete="off"
             />
           </div>
-          <button type="submit" class="btn btn-primary">ค้นหาสาขา</button>
           <button type="button" id="program-reset-btn" class="btn btn-ghost">ล้างตัวกรอง</button>
         </form>
 
@@ -753,7 +888,7 @@
       </section>
 
       <div class="result-bar">
-        <span id="program-result-summary">กำลังโหลดรายชื่อคณะและสาขา...</span>
+        <span id="program-result-summary">รายชื่อคณะและสาขาวิชา</span>
         <span id="program-api-source">แหล่งข้อมูล: API</span>
       </div>
 
@@ -762,12 +897,14 @@
   </main>
 
   <script>
-    const heroContent = document.getElementById('hero-content');
+    // Global Search + Autocomplete elements
+    const globalSearchBox = document.getElementById('global-search-box');
+    const globalUniSearch = document.getElementById('global-uni-search');
+    const clearGlobalSearchBtn = document.getElementById('clear-global-search-btn');
+    const autocompleteMenu = document.getElementById('autocomplete-menu');
 
     // Directory View elements
     const directoryView = document.getElementById('directory-view');
-    const uniFilterForm = document.getElementById('uni-filter-form');
-    const uniSearchInput = document.getElementById('uni-search-input');
     const uniProvinceInput = document.getElementById('uni-province-input');
     const uniResetBtn = document.getElementById('uni-reset-btn');
     const uniTypeChips = document.getElementById('uni-type-chips');
@@ -777,6 +914,7 @@
 
     // Detail View elements
     const detailView = document.getElementById('detail-view');
+    const selectedUniBanner = document.getElementById('selected-uni-banner');
     const programFilterForm = document.getElementById('program-filter-form');
     const programSearchInput = document.getElementById('program-search-input');
     const programResetBtn = document.getElementById('program-reset-btn');
@@ -807,12 +945,18 @@
 
     // State
     let allUniversitiesCache = [];
+    let autocompleteMatches = [];
+    let highlightedAcIndex = -1;
+
     let selectedUniType = '';
     let currentUniPage = 1;
     const UNI_PAGE_LIMIT = 12;
 
     let currentUniversityId = null;
     let selectedFacultyId = '';
+
+    let directoryDebounceTimer = null;
+    let programDebounceTimer = null;
 
     function escapeHtml(text) {
       if (text === null || text === undefined || text === '') return '-';
@@ -829,8 +973,12 @@
       return num > 0 ? num : null;
     }
 
-    // ดึงรายชื่อมหาวิทยาลัยทั้งหมด (รองรับมากกว่า 50 แห่งในอนาคตด้วยการไล่โหลดทุกหน้า)
-    async function fetchAllUniversitiesForMeta() {
+    function updateClearSearchVisibility() {
+      clearGlobalSearchBtn.classList.toggle('hidden', !globalUniSearch.value.trim());
+    }
+
+    // โหลดรายชื่อมหาวิทยาลัยทั้งหมดจาก API สำหรับ Autocomplete (รองรับมากกว่า 50 แห่งในอนาคต)
+    async function fetchAllUniversitiesForAutocomplete() {
       const collected = [];
       let page = 1;
       let totalPages = 1;
@@ -849,45 +997,106 @@
     }
 
     // =========================================================================
-    // โหมด 1: รายชื่อมหาวิทยาลัยทั้งหมด (Directory View)
+    // ช่องเสิร์ชหลัก + Live Autocomplete Dropdown (สไตล์ MyTCAS)
     // =========================================================================
-    function renderDirectoryHero() {
-      document.title = 'ค้นหามหาวิทยาลัย คณะ และสาขา สไตล์ TCAS | UniGO!';
-      const totalUnis = allUniversitiesCache.length;
-      const totalFaculties = allUniversitiesCache.reduce(
-        (sum, u) => sum + Number(u.faculty_count || 0),
-        0
-      );
-      const totalPrograms = allUniversitiesCache.reduce(
-        (sum, u) => sum + Number(u.program_count || 0),
-        0
-      );
-
-      heroContent.innerHTML = `
-        <div class="tcas-badge">🎓 TCAS University Explorer • ระบบค้นหามหาวิทยาลัย คณะ และสาขา</div>
-        <h1 class="hero-title">ค้นหามหาวิทยาลัย คณะ และสาขาวิชา</h1>
-        <p class="hero-desc">
-          เลือกดูข้อมูลมหาวิทยาลัย คณะ สาขา ค่าเทอม และรอบการรับสมัคร TCAS จากฐานข้อมูลจริงแบบไดนามิก
-          รองรับการเพิ่มมหาวิทยาลัย คณะ และสาขาวิชาใหม่ในอนาคตได้ทันที
-        </p>
-        <div class="hero-stats">
-          <div class="stat-pill">🏛️ มหาวิทยาลัยในระบบ: ${totalUnis.toLocaleString()} แห่ง</div>
-          <div class="stat-pill">🏫 คณะ / สถาบัน: ${totalFaculties.toLocaleString()} แห่ง</div>
-          <div class="stat-pill">📚 สาขาวิชา: ${totalPrograms.toLocaleString()} สาขา</div>
-        </div>
-      `;
+    function filterAutocomplete(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) return allUniversitiesCache.slice(0, 8);
+      return allUniversitiesCache
+        .filter((u) => {
+          const hay = [u.name_th, u.name_en, u.short_name, u.province]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return hay.includes(q);
+        })
+        .slice(0, 10);
     }
 
+    function renderAutocomplete(open = true) {
+      const query = globalUniSearch.value;
+      autocompleteMatches = filterAutocomplete(query);
+      highlightedAcIndex = -1;
+
+      if (!open) {
+        autocompleteMenu.classList.add('hidden');
+        return;
+      }
+
+      if (autocompleteMatches.length === 0) {
+        autocompleteMenu.innerHTML = `<div class="ac-empty">ไม่พบมหาวิทยาลัยที่ตรงกับ "${escapeHtml(query.trim())}"</div>`;
+        autocompleteMenu.classList.remove('hidden');
+        return;
+      }
+
+      autocompleteMenu.innerHTML = autocompleteMatches
+        .map(
+          (u, idx) => `
+            <button type="button" class="ac-item" data-index="${idx}" data-id="${u.id}" role="option">
+              <div class="ac-item-main">
+                <div class="ac-item-title">${escapeHtml(u.name_th)}${u.short_name ? ` (${escapeHtml(u.short_name)})` : ''}</div>
+                <div class="ac-item-sub">${escapeHtml(u.name_en)} • ${escapeHtml(u.province)}</div>
+              </div>
+              <span class="ac-item-meta">${escapeHtml(UNIVERSITY_TYPE_LABEL[u.type] || u.type)}</span>
+            </button>
+          `
+        )
+        .join('');
+
+      autocompleteMenu.querySelectorAll('.ac-item').forEach((item) => {
+        item.addEventListener('mousedown', (e) => {
+          // ใช้ mousedown เพื่อเลือกก่อน input blur
+          e.preventDefault();
+          const id = Number(item.dataset.id);
+          selectUniversityFromAutocomplete(id);
+        });
+      });
+
+      autocompleteMenu.classList.remove('hidden');
+    }
+
+    function closeAutocomplete() {
+      autocompleteMenu.classList.add('hidden');
+      highlightedAcIndex = -1;
+    }
+
+    function updateAutocompleteHighlight() {
+      const items = autocompleteMenu.querySelectorAll('.ac-item');
+      items.forEach((el, idx) => {
+        el.classList.toggle('highlighted', idx === highlightedAcIndex);
+        if (idx === highlightedAcIndex) {
+          el.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }
+
+    function selectUniversityFromAutocomplete(universityId) {
+      const found = allUniversitiesCache.find((u) => u.id === universityId);
+      if (found) {
+        globalUniSearch.value = found.name_th;
+        updateClearSearchVisibility();
+      }
+      closeAutocomplete();
+      navigateToUniversity(universityId);
+    }
+
+    // =========================================================================
+    // โหมด 1: การ์ดรายชื่อมหาวิทยาลัยทั้งหมด (Live Search)
+    // =========================================================================
     async function loadUniversityDirectory() {
-      universitiesGrid.innerHTML = '<div class="empty-box" style="grid-column: 1 / -1;">กำลังโหลดรายชื่อมหาวิทยาลัย...</div>';
+      universitiesGrid.innerHTML =
+        '<div class="empty-box" style="grid-column: 1 / -1;">กำลังโหลดรายชื่อมหาวิทยาลัย...</div>';
       uniPagination.classList.add('hidden');
+
+      const q = globalUniSearch.value.trim();
+      const province = uniProvinceInput.value.trim();
 
       const params = new URLSearchParams();
       params.set('page', String(currentUniPage));
       params.set('limit', String(UNI_PAGE_LIMIT));
-      if (uniSearchInput.value.trim()) params.set('q', uniSearchInput.value.trim());
+      if (q) params.set('q', q);
       if (selectedUniType) params.set('type', selectedUniType);
-      if (uniProvinceInput.value.trim()) params.set('province', uniProvinceInput.value.trim());
+      if (province) params.set('province', province);
 
       const res = await fetch(`/api/v1/universities?${params.toString()}`);
       const json = await res.json();
@@ -898,9 +1107,16 @@
       }
 
       const items = json.data.items || [];
-      const pagination = json.data.pagination || { page: 1, totalPages: 1, total: items.length };
+      const pagination = json.data.pagination || { page: 1, totalPages: 1 };
 
-      uniResultSummary.textContent = `แสดง ${items.length.toLocaleString()} จากทั้งหมด ${Number(pagination.total).toLocaleString()} มหาวิทยาลัย`;
+      const filterNotes = [];
+      if (q) filterNotes.push(`คำค้น "${q}"`);
+      if (selectedUniType) filterNotes.push(UNIVERSITY_TYPE_LABEL[selectedUniType] || selectedUniType);
+      if (province) filterNotes.push(`จังหวัด "${province}"`);
+      uniResultSummary.textContent =
+        filterNotes.length > 0
+          ? `ผลการค้นหา: ${filterNotes.join(' • ')}`
+          : 'รายชื่อมหาวิทยาลัยทั้งหมดในระบบ';
 
       if (items.length === 0) {
         universitiesGrid.innerHTML =
@@ -909,18 +1125,8 @@
       }
 
       universitiesGrid.innerHTML = items
-        .map((u) => {
-          const facCount = Number(u.faculty_count || 0);
-          const progCount = Number(u.program_count || 0);
-          const countBadges =
-            facCount > 0 || progCount > 0
-              ? `
-                <span class="mini-badge">🏛️ ${facCount.toLocaleString()} คณะ</span>
-                <span class="mini-badge">📚 ${progCount.toLocaleString()} สาขา</span>
-              `
-              : `<span class="mini-badge">รอเพิ่มข้อมูลคณะ/สาขา</span>`;
-
-          return `
+        .map(
+          (u) => `
             <article class="uni-card" data-uni-id="${u.id}">
               <div class="uni-card-top">
                 <span class="uni-type-badge">${escapeHtml(UNIVERSITY_TYPE_LABEL[u.type] || u.type)}</span>
@@ -932,18 +1138,18 @@
               </div>
               <p class="uni-desc">${escapeHtml(u.description)}</p>
               <div class="uni-card-footer">
-                <div class="uni-meta-badges">${countBadges}</div>
+                <span class="uni-region-tag">${u.region ? `ภาค${escapeHtml(u.region)}` : ''}</span>
                 <span class="uni-open-cta">ดูคณะและสาขา →</span>
               </div>
             </article>
-          `;
-        })
+          `
+        )
         .join('');
 
       universitiesGrid.querySelectorAll('.uni-card').forEach((card) => {
         card.addEventListener('click', () => {
           const id = Number(card.dataset.uniId);
-          navigateToUniversity(id);
+          selectUniversityFromAutocomplete(id);
         });
       });
 
@@ -970,74 +1176,55 @@
     }
 
     // =========================================================================
-    // โหมด 2: รายละเอียดมหาวิทยาลัย + คณะและสาขา (Detail View)
+    // โหมด 2: ข้อมูลมหาวิทยาลัย + คณะและสาขา (หน้าเดียวจบ)
     // =========================================================================
     async function loadUniversityDetail(universityId) {
       const res = await fetch(`/api/v1/universities/${universityId}`);
       const json = await res.json();
 
       if (!json.success) {
-        heroContent.innerHTML = `
-          <div class="hero-top-bar">
-            <button type="button" class="back-btn" id="hero-back-btn">← กลับหน้ารายชื่อมหาวิทยาลัยทั้งหมด</button>
+        selectedUniBanner.innerHTML = `
+          <div class="selected-uni-top">
+            <div>
+              <h2 class="selected-uni-title">ไม่พบข้อมูลมหาวิทยาลัย</h2>
+              <p class="selected-uni-desc">${escapeHtml(json.error?.message || 'กรุณาค้นหาหรือเลือกมหาวิทยาลัยอื่น')}</p>
+            </div>
+            <button type="button" class="btn btn-outline" id="back-to-all-btn">← ดูมหาวิทยาลัยทั้งหมด</button>
           </div>
-          <h1 class="hero-title">ไม่พบข้อมูลมหาวิทยาลัย</h1>
-          <p class="hero-desc">${escapeHtml(json.error?.message || 'กรุณาเลือกมหาวิทยาลัยจากรายชื่อทั้งหมด')}</p>
         `;
-        document.getElementById('hero-back-btn')?.addEventListener('click', navigateToDirectory);
+        document.getElementById('back-to-all-btn')?.addEventListener('click', navigateToDirectory);
         facultiesContainer.innerHTML = '';
         return false;
       }
 
       const u = json.data;
-      const facCount = Number(u.faculty_count || 0);
-      const progCount = Number(u.program_count || 0);
-
       document.title = `${u.name_th} — ค้นหาคณะและสาขา | UniGO!`;
+      globalUniSearch.value = u.name_th;
+      updateClearSearchVisibility();
 
-      const switcherOptions = allUniversitiesCache
-        .map(
-          (item) =>
-            `<option value="${item.id}" ${item.id === u.id ? 'selected' : ''}>${escapeHtml(item.name_th)}${item.short_name ? ` (${escapeHtml(item.short_name)})` : ''}</option>`
-        )
-        .join('');
-
-      heroContent.innerHTML = `
-        <div class="hero-top-bar">
-          <button type="button" class="back-btn" id="hero-back-btn">← รายชื่อมหาวิทยาลัยทั้งหมด</button>
-          ${
-            allUniversitiesCache.length > 0
-              ? `
-                <div class="uni-switcher-wrap">
-                  <label for="uni-switcher">สลับมหาวิทยาลัย:</label>
-                  <select id="uni-switcher">${switcherOptions}</select>
-                </div>
-              `
-              : ''
-          }
+      selectedUniBanner.innerHTML = `
+        <div class="selected-uni-top">
+          <div>
+            <div class="selected-uni-badges">
+              <span class="pill-badge">${escapeHtml(UNIVERSITY_TYPE_LABEL[u.type] || u.type)}</span>
+              <span class="pill-badge neutral">📍 ${escapeHtml(u.province)}${u.region ? ` (ภาค${escapeHtml(u.region)})` : ''}</span>
+            </div>
+            <h2 class="selected-uni-title">${escapeHtml(u.name_th)}${u.short_name ? ` (${escapeHtml(u.short_name)})` : ''}</h2>
+            <div class="selected-uni-en">${escapeHtml(u.name_en)}</div>
+          </div>
+          <div class="selected-uni-actions">
+            ${
+              u.website_url
+                ? `<a class="btn btn-primary" href="${escapeHtml(u.website_url)}" target="_blank" rel="noopener noreferrer">เว็บไซต์มหาวิทยาลัย ↗</a>`
+                : ''
+            }
+            <button type="button" class="btn btn-outline" id="back-to-all-btn">← มหาวิทยาลัยทั้งหมด</button>
+          </div>
         </div>
-        <div class="tcas-badge">🎓 TCAS Explorer • ${escapeHtml(UNIVERSITY_TYPE_LABEL[u.type] || u.type)} • ${escapeHtml(u.province)}</div>
-        <h1 class="hero-title">${escapeHtml(u.name_th)}${u.short_name ? ` (${escapeHtml(u.short_name)})` : ''}</h1>
-        <div class="hero-en">${escapeHtml(u.name_en)}</div>
-        <p class="hero-desc">${escapeHtml(u.description)}</p>
-        <div class="hero-stats">
-          <div class="stat-pill">🏛️ ${facCount.toLocaleString()} คณะ / สถาบัน</div>
-          <div class="stat-pill">📚 ${progCount.toLocaleString()} สาขาวิชา</div>
-          <div class="stat-pill">📍 ${escapeHtml(u.province)}</div>
-          ${
-            u.website_url
-              ? `<a class="hero-link-btn" href="${escapeHtml(u.website_url)}" target="_blank" rel="noopener noreferrer">เว็บไซต์มหาวิทยาลัย ↗</a>`
-              : ''
-          }
-        </div>
+        ${u.description ? `<p class="selected-uni-desc">${escapeHtml(u.description)}</p>` : ''}
       `;
 
-      document.getElementById('hero-back-btn')?.addEventListener('click', navigateToDirectory);
-      document.getElementById('uni-switcher')?.addEventListener('change', (e) => {
-        const nextId = Number(e.target.value);
-        if (nextId > 0) navigateToUniversity(nextId);
-      });
-
+      document.getElementById('back-to-all-btn')?.addEventListener('click', navigateToDirectory);
       return true;
     }
 
@@ -1047,9 +1234,10 @@
       facultiesContainer.innerHTML = '<div class="empty-box">กำลังโหลดข้อมูลคณะและสาขา...</div>';
       programApiSource.textContent = `แหล่งข้อมูล: API \`/api/v1/universities/${currentUniversityId}/programs\``;
 
+      const q = programSearchInput.value.trim();
       const params = new URLSearchParams();
       if (selectedFacultyId) params.set('faculty_id', selectedFacultyId);
-      if (programSearchInput.value.trim()) params.set('q', programSearchInput.value.trim());
+      if (q) params.set('q', q);
 
       const res = await fetch(
         `/api/v1/universities/${currentUniversityId}/programs${params.toString() ? `?${params}` : ''}`
@@ -1062,14 +1250,13 @@
       }
 
       const faculties = json.data.faculties || [];
-      const totalPrograms = faculties.reduce((sum, f) => sum + (f.programs?.length || 0), 0);
 
       if (initChips) {
         const chipsHtml = [
-          `<button type="button" class="chip active" data-id="">ทุกคณะ (${totalPrograms.toLocaleString()} สาขา)</button>`,
+          `<button type="button" class="chip active" data-id="">ทุกคณะ</button>`,
           ...faculties.map(
             (f) =>
-              `<button type="button" class="chip" data-id="${f.id}">${escapeHtml(f.name_th)} (${(f.programs?.length || 0).toLocaleString()})</button>`
+              `<button type="button" class="chip" data-id="${f.id}">${escapeHtml(f.name_th)}</button>`
           ),
         ].join('');
         facultyChipsEl.innerHTML = chipsHtml;
@@ -1084,13 +1271,15 @@
         });
       }
 
-      programResultSummary.textContent = `แสดง ${faculties.length.toLocaleString()} คณะ • รวม ${totalPrograms.toLocaleString()} สาขาวิชา`;
+      programResultSummary.textContent = q
+        ? `ผลการค้นหาสาขา "${q}"`
+        : 'รายชื่อคณะและสาขาวิชา';
 
       if (faculties.length === 0) {
-        const isFiltered = Boolean(selectedFacultyId || programSearchInput.value.trim());
+        const isFiltered = Boolean(selectedFacultyId || q);
         facultiesContainer.innerHTML = isFiltered
           ? '<div class="empty-box">ไม่พบคณะหรือสาขาที่ตรงกับคำค้นหา ลองเปลี่ยนคำค้นหรือกดล้างตัวกรองครับ</div>'
-          : '<div class="empty-box">ยังไม่มีข้อมูลคณะและสาขาของมหาวิทยาลัยนี้ในฐานข้อมูล (เมื่อเพิ่มข้อมูลในตาราง faculties / programs ระบบจะแสดงผลอัตโนมัติ)</div>';
+          : '<div class="empty-box">ยังไม่มีข้อมูลคณะและสาขาของมหาวิทยาลัยนี้ในฐานข้อมูล (สามารถเพิ่มข้อมูลในอนาคตได้ทันที)</div>';
         return;
       }
 
@@ -1106,7 +1295,7 @@
                     const admissionsHtml =
                       admissions.length > 0
                         ? `
-                          <div class="tcas-rounds-title">📋 รอบการรับสมัคร TCAS (${admissions.length.toLocaleString()} รอบ)</div>
+                          <div class="tcas-rounds-title">📋 รอบการรับสมัคร TCAS</div>
                           <div class="round-list">
                             ${admissions
                               .map(
@@ -1157,7 +1346,6 @@
                   <h2>${escapeHtml(fac.name_th)}</h2>
                   <div class="en">${escapeHtml(fac.name_en)}${fac.description ? ` — ${escapeHtml(fac.description)}` : ''}</div>
                 </div>
-                <span class="faculty-count-badge">${programs.length.toLocaleString()} สาขา</span>
               </div>
               <div class="program-grid">${programsHtml}</div>
             </section>
@@ -1167,13 +1355,17 @@
     }
 
     // =========================================================================
-    // การสลับโหมดและ URL Sync
+    // การสลับโหมด & URL Sync
     // =========================================================================
-    async function showDirectoryView() {
+    async function showDirectoryView({ clearSearch = false } = {}) {
       currentUniversityId = null;
+      document.title = 'ค้นหามหาวิทยาลัย คณะ และสาขา สไตล์ TCAS | UniGO!';
+      if (clearSearch) {
+        globalUniSearch.value = '';
+        updateClearSearchVisibility();
+      }
       detailView.classList.add('hidden');
       directoryView.classList.remove('hidden');
-      renderDirectoryHero();
       await loadUniversityDirectory();
     }
 
@@ -1188,7 +1380,6 @@
       if (ok) {
         await loadPrograms({ initChips: true });
       }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function navigateToUniversity(universityId) {
@@ -1199,25 +1390,96 @@
 
     function navigateToDirectory() {
       window.history.pushState({}, '', '/universities.html');
-      showDirectoryView();
+      showDirectoryView({ clearSearch: true });
     }
 
-    // Events: Directory View
-    uniFilterForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      currentUniPage = 1;
-      loadUniversityDirectory();
+    // =========================================================================
+    // Event Listeners
+    // =========================================================================
+    globalUniSearch.addEventListener('focus', () => {
+      renderAutocomplete(true);
     });
 
-    uniResetBtn.addEventListener('click', () => {
-      uniSearchInput.value = '';
-      uniProvinceInput.value = '';
-      selectedUniType = '';
-      currentUniPage = 1;
-      uniTypeChips.querySelectorAll('.chip').forEach((c, idx) => {
-        c.classList.toggle('active', idx === 0);
-      });
-      loadUniversityDirectory();
+    globalUniSearch.addEventListener('input', () => {
+      updateClearSearchVisibility();
+      renderAutocomplete(true);
+
+      // ถ้าอยู่ในโหมดรายชื่อมหาวิทยาลัย ให้กรองการ์ดด้านล่างแบบ Live Search ทันที
+      if (!currentUniversityId) {
+        clearTimeout(directoryDebounceTimer);
+        directoryDebounceTimer = setTimeout(() => {
+          currentUniPage = 1;
+          loadUniversityDirectory();
+        }, 200);
+      }
+    });
+
+    globalUniSearch.addEventListener('keydown', (e) => {
+      if (autocompleteMenu.classList.contains('hidden')) {
+        if (e.key === 'ArrowDown') {
+          renderAutocomplete(true);
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (autocompleteMatches.length > 0) {
+          highlightedAcIndex = (highlightedAcIndex + 1) % autocompleteMatches.length;
+          updateAutocompleteHighlight();
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (autocompleteMatches.length > 0) {
+          highlightedAcIndex =
+            (highlightedAcIndex - 1 + autocompleteMatches.length) % autocompleteMatches.length;
+          updateAutocompleteHighlight();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const target =
+          highlightedAcIndex >= 0
+            ? autocompleteMatches[highlightedAcIndex]
+            : autocompleteMatches[0];
+        if (target) {
+          selectUniversityFromAutocomplete(target.id);
+        } else if (!currentUniversityId) {
+          closeAutocomplete();
+          currentUniPage = 1;
+          loadUniversityDirectory();
+        }
+      } else if (e.key === 'Escape') {
+        closeAutocomplete();
+      }
+    });
+
+    clearGlobalSearchBtn.addEventListener('click', () => {
+      globalUniSearch.value = '';
+      updateClearSearchVisibility();
+      globalUniSearch.focus();
+      renderAutocomplete(true);
+      if (currentUniversityId) {
+        window.history.pushState({}, '', '/universities.html');
+        showDirectoryView({ clearSearch: false });
+      } else {
+        currentUniPage = 1;
+        loadUniversityDirectory();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!globalSearchBox.contains(e.target)) {
+        closeAutocomplete();
+      }
+    });
+
+    // Directory filters (Live)
+    uniProvinceInput.addEventListener('input', () => {
+      clearTimeout(directoryDebounceTimer);
+      directoryDebounceTimer = setTimeout(() => {
+        currentUniPage = 1;
+        loadUniversityDirectory();
+      }, 250);
     });
 
     uniTypeChips.querySelectorAll('.chip').forEach((btn) => {
@@ -1230,10 +1492,29 @@
       });
     });
 
-    // Events: Detail View
+    uniResetBtn.addEventListener('click', () => {
+      globalUniSearch.value = '';
+      updateClearSearchVisibility();
+      uniProvinceInput.value = '';
+      selectedUniType = '';
+      currentUniPage = 1;
+      uniTypeChips.querySelectorAll('.chip').forEach((c, idx) => {
+        c.classList.toggle('active', idx === 0);
+      });
+      loadUniversityDirectory();
+    });
+
+    // Program filters (Live)
     programFilterForm.addEventListener('submit', (e) => {
       e.preventDefault();
       loadPrograms();
+    });
+
+    programSearchInput.addEventListener('input', () => {
+      clearTimeout(programDebounceTimer);
+      programDebounceTimer = setTimeout(() => {
+        loadPrograms();
+      }, 250);
     });
 
     programResetBtn.addEventListener('click', () => {
@@ -1251,13 +1532,13 @@
       if (id) {
         showDetailView(id);
       } else {
-        showDirectoryView();
+        showDirectoryView({ clearSearch: true });
       }
     });
 
     // Initial load
     (async () => {
-      await fetchAllUniversitiesForMeta();
+      await fetchAllUniversitiesForAutocomplete();
       const id = getUniversityIdFromUrl();
       if (id) {
         await showDetailView(id);
@@ -1268,4 +1549,3 @@
   </script>
 </body>
 </html>
-

@@ -1,0 +1,21 @@
+{
+  "name": "unigo-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "db:migrate": "node scripts/migrate.js",
+    "db:create": "node scripts/create-database.js",
+    "db:setup": "npm run db:create && npm run db:migrate",
+    "db:check": "node scripts/check-db.js",
+    "api:dev": "node src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "express-mysql-session": "^3.0.3",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.24.6"
+  }
+}

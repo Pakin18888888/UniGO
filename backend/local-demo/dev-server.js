@@ -19,7 +19,7 @@ const session = require('express-session');
 const { Server } = require('socket.io');
 const mysql = require('mysql2/promise');
 
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const demoConfig = require('./database-env');
 
 const universityRoutes = require('../src/routes/university.routes');
 const examRoutes = require('../src/routes/exam.routes');
@@ -31,12 +31,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = demoConfig.port;
 
 // ตั้งค่า Session Middleware (ใช้ร่วมกันทั้ง Express และ Socket.IO)
 // TODO: เมื่อรวมกับคิน ให้ใช้ config/session.js ของคินแทน
 const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET || 'unigo_local_dev_secret',
+  name: 'unigo_friend_demo.sid',
+  secret: demoConfig.sessionSecret || 'unigo_local_dev_secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -198,11 +199,11 @@ app.use('/api', (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 UniGO! Local Demo Server (ส่วนของบอล) ทำงานแล้วที่ http://localhost:${PORT}`);
-  console.log(`   - หน้าหลักรวมลิงก์:   http://localhost:${PORT}/`);
-  console.log(`   - ข้อมูลมหาวิทยาลัย:  http://localhost:${PORT}/universities.html`);
-  console.log(`   - คลังแนวข้อสอบ:    http://localhost:${PORT}/exams.html`);
-  console.log(`   - ห้องแชตเรียลไทม์:  http://localhost:${PORT}/chat.html`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`🚀 UniGO! Local Demo Server (ส่วนของบอล) ทำงานแล้วที่ http://127.0.0.1:${PORT}`);
+  console.log(`   - หน้าหลักรวมลิงก์:   http://127.0.0.1:${PORT}/`);
+  console.log(`   - ข้อมูลมหาวิทยาลัย:  http://127.0.0.1:${PORT}/universities.html`);
+  console.log(`   - คลังแนวข้อสอบ:    http://127.0.0.1:${PORT}/exams.html`);
+  console.log(`   - ห้องแชตเรียลไทม์:  http://127.0.0.1:${PORT}/chat.html`);
 });
 

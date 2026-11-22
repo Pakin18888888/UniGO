@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+require('../local-demo/database-env');
 
 const ROOT_DIR = path.join(__dirname, '..', '..');
 
@@ -86,7 +86,7 @@ async function runSqlFiles() {
       'chat_messages',
     ];
 
-    console.log('\n📊 สรุปจำนวนข้อมูลในฐานข้อมูล unigo:');
+    console.log(`\n📊 สรุปจำนวนข้อมูลในฐานข้อมูล ${process.env.DB_NAME}:`);
     for (const table of tables) {
       const [[row]] = await connection.query(`SELECT COUNT(*) AS total FROM \`${table}\``);
       console.log(`   - ${table}: ${row.total} แถว`);

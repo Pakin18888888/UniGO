@@ -201,9 +201,19 @@ app.use('/api', (req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`🚀 UniGO! Local Demo Server (ส่วนของบอล) ทำงานแล้วที่ http://127.0.0.1:${PORT}`);
-  console.log(`   - หน้าหลักรวมลิงก์:   http://127.0.0.1:${PORT}/`);
-  console.log(`   - ข้อมูลมหาวิทยาลัย:  http://127.0.0.1:${PORT}/universities.html`);
-  console.log(`   - คลังแนวข้อสอบ:    http://127.0.0.1:${PORT}/exams.html`);
-  console.log(`   - ห้องแชตเรียลไทม์:  http://127.0.0.1:${PORT}/chat.html`);
+  console.log(`   - หน้าหลักรวมลิงก์:    http://127.0.0.1:${PORT}/`);
+  console.log(`   - ข้อมูลมหาวิทยาลัย:   http://127.0.0.1:${PORT}/universities.html`);
+  console.log(`   - คลังแนวข้อสอบ:       http://127.0.0.1:${PORT}/exams.html`);
+  console.log(`   - นับถอยหลังวันสอบ:    http://127.0.0.1:${PORT}/countdown.html`);
+  console.log(`   - ห้องแชตเรียลไทม์:    http://127.0.0.1:${PORT}/chat.html`);
+});
+
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`🚀 UniGO! Local Demo Server (ส่วนของบอล) ทำงานแล้วที่ http://127.0.0.1:${PORT}`);
+  console.log(`   - หน้าหลักรวมลิงก์:    http://127.0.0.1:${PORT}/`);
+  console.log(`   - ข้อมูลมหาวิทยาลัย:   http://127.0.0.1:${PORT}/universities.html`);
+  console.log(`   - คลังแนวข้อสอบ:       http://127.0.0.1:${PORT}/exams.html`);
+  console.log(`   - นับถอยหลังวันสอบ:    http://127.0.0.1:${PORT}/countdown.html`);
+  console.log(`   - ห้องแชตเรียลไทม์:    http://127.0.0.1:${PORT}/chat.html`);
 });
 

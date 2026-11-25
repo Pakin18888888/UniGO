@@ -439,6 +439,96 @@
       text-align: center;
       color: var(--muted);
     }
+
+    /* กล่องนับถอยหลังวันสอบ TCAS แบบ Real-time ในหน้าคลังข้อสอบ */
+    .exam-cd-banner {
+      margin-top: 20px;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .exam-cd-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .exam-cd-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .exam-cd-tab {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .exam-cd-tab.active {
+      background: #ffffff;
+      color: var(--tcas-navy);
+      border-color: #ffffff;
+      font-weight: 800;
+    }
+
+    .exam-cd-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 680px) {
+      .exam-cd-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .exam-cd-box {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 10px 6px;
+    }
+
+    .exam-cd-box strong {
+      display: block;
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .exam-cd-box span {
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+
+    .exam-cd-full-link {
+      color: #93c5fd;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .exam-cd-full-link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -449,6 +539,7 @@
         <a href="/">หน้าหลัก</a>
         <a href="/universities.html">ข้อมูลมหาวิทยาลัย</a>
         <a href="/exams.html" class="active">คลังแนวข้อสอบ</a>
+        <a href="/countdown.html">นับถอยหลังวันสอบ</a>
         <a href="/chat.html">ห้องแชต</a>
       </nav>
     </div>
@@ -459,6 +550,29 @@
       <div class="hero-badge">📝 Official Exam Blueprint & Practice Hub</div>
       <h1>คลังแนวข้อสอบและโครงสร้างข้อสอบ TCAS</h1>
       <p>รวมโครงสร้างข้อสอบจริงจาก ทปอ. (TGAT, TPAT, A-Level) พร้อมข้อสอบจำลองทางการ IELTS และ Digital SAT กดเปิดดูแนวข้อสอบจริงได้ทันที</p>
+
+      <!-- แถบนับถอยหลังวันสอบ TCAS แบบ Real-time อ้างอิง myTCAS -->
+      <div class="exam-cd-banner">
+        <div class="exam-cd-top">
+          <div>
+            <strong id="inline-cd-title" style="font-size:14.5px;">⏳ นับถอยหลังวันสอบ TGAT / TPAT (30 ม.ค. 2570 • 09:00 น.)</strong>
+          </div>
+          <div class="exam-cd-tabs">
+            <button type="button" class="exam-cd-tab active" data-iso="2027-01-30T09:00:00+07:00" data-label="⏳ นับถอยหลังวันสอบ TGAT / TPAT (30 ม.ค. 2570 • 09:00 น.)">TGAT / TPAT</button>
+            <button type="button" class="exam-cd-tab" data-iso="2027-02-13T08:30:00+07:00" data-label="⏳ นับถอยหลังวันสอบ TPAT1 กสพท (13 ก.พ. 2570 • 08:30 น.)">TPAT1 กสพท</button>
+            <button type="button" class="exam-cd-tab" data-iso="2027-03-13T08:30:00+07:00" data-label="⏳ นับถอยหลังวันสอบ A-Level (13 มี.ค. 2570 • 08:30 น.)">A-Level</button>
+          </div>
+          <a class="exam-cd-full-link" href="/countdown.html">ดูตารางนับถอยหลังครบทุกวิชา →</a>
+        </div>
+        <div class="exam-cd-grid">
+          <div class="exam-cd-box"><strong id="icd-y">0</strong><span>ปี</span></div>
+          <div class="exam-cd-box"><strong id="icd-m">0</strong><span>เดือน</span></div>
+          <div class="exam-cd-box"><strong id="icd-d">0</strong><span>วัน</span></div>
+          <div class="exam-cd-box"><strong id="icd-h">00</strong><span>ชั่วโมง</span></div>
+          <div class="exam-cd-box"><strong id="icd-min">00</strong><span>นาที</span></div>
+          <div class="exam-cd-box"><strong id="icd-s">00</strong><span>วินาที</span></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -694,6 +808,60 @@
     examModal.addEventListener('click', (e) => {
       if (e.target === examModal) examModal.classList.remove('open');
     });
+
+    // ระบบนับถอยหลังวันสอบ TCAS แบบ Real-time (ปี / เดือน / วัน / ชั่วโมง / นาที / วินาที)
+    let inlineTargetIso = '2027-01-30T09:00:00+07:00';
+    function addYM(base, addY, addM) {
+      const y = base.getFullYear() + addY;
+      const m = base.getMonth() + addM;
+      const maxD = new Date(y, m + 1, 0).getDate();
+      return new Date(y, m, Math.min(base.getDate(), maxD), base.getHours(), base.getMinutes(), base.getSeconds(), base.getMilliseconds());
+    }
+    function tickInlineCountdown() {
+      const now = new Date();
+      const target = new Date(inlineTargetIso);
+      if (target <= now) {
+        ['icd-y', 'icd-m', 'icd-d', 'icd-h', 'icd-min', 'icd-s'].forEach((id) => {
+          document.getElementById(id).textContent = '0';
+        });
+        return;
+      }
+      let years = target.getFullYear() - now.getFullYear();
+      if (addYM(now, years, 0) > target) years -= 1;
+      years = Math.max(0, years);
+      const afterY = addYM(now, years, 0);
+
+      let months = (target.getFullYear() - afterY.getFullYear()) * 12 + (target.getMonth() - afterY.getMonth());
+      if (addYM(afterY, 0, months) > target) months -= 1;
+      months = Math.max(0, months);
+      const afterM = addYM(afterY, 0, months);
+
+      let rem = Math.max(0, target.getTime() - afterM.getTime());
+      const days = Math.floor(rem / 86400000); rem -= days * 86400000;
+      const hours = Math.floor(rem / 3600000); rem -= hours * 3600000;
+      const mins = Math.floor(rem / 60000); rem -= mins * 60000;
+      const secs = Math.floor(rem / 1000);
+
+      document.getElementById('icd-y').textContent = years;
+      document.getElementById('icd-m').textContent = months;
+      document.getElementById('icd-d').textContent = days;
+      document.getElementById('icd-h').textContent = String(hours).padStart(2, '0');
+      document.getElementById('icd-min').textContent = String(mins).padStart(2, '0');
+      document.getElementById('icd-s').textContent = String(secs).padStart(2, '0');
+    }
+
+    document.querySelectorAll('.exam-cd-tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        inlineTargetIso = btn.dataset.iso;
+        document.getElementById('inline-cd-title').textContent = btn.dataset.label;
+        document.querySelectorAll('.exam-cd-tab').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        tickInlineCountdown();
+      });
+    });
+
+    tickInlineCountdown();
+    setInterval(tickInlineCountdown, 250);
 
     loadExams(1);
   </script>

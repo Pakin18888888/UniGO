@@ -203,6 +203,7 @@ server.listen(PORT, () => {
   console.log(`   - หน้าหลักรวมลิงก์:   http://localhost:${PORT}/`);
   console.log(`   - ข้อมูลมหาวิทยาลัย:  http://localhost:${PORT}/universities.html`);
   console.log(`   - คลังแนวข้อสอบ:    http://localhost:${PORT}/exams.html`);
+  console.log(`   - นับถอยหลังวันสอบ:   http://localhost:${PORT}/countdown.html`);
   console.log(`   - ห้องแชตเรียลไทม์:  http://localhost:${PORT}/chat.html`);
 });
 

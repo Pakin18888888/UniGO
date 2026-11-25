@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>นับถอยหลังวันสอบ TCAS แบบ Real-time (อ้างอิง ทปอ. myTCAS) | UniGO!</title>
+  <style>
+    :root {
+      --tcas-navy: #142850;
+      --tcas-blue: #2563eb;
+      --tcas-teal: #0d9488;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* แถบนำทาง */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .brand {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--tcas-navy);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand span {
+      background: var(--tcas-blue);
+      color: #ffffff;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .nav-links a:hover {
+      background: #f3f4f6;
+      color: var(--text);
+    }
+
+    .nav-links a.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Hero Countdown */
+    .hero {
+      background: radial-gradient(circle at top right, #1d4ed8 0%, #142850 52%, #0f172a 100%);
+      color: #ffffff;
+      padding: 36px 24px 64px;
+    }
+
+    .hero-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .hero-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .tcas-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.75; }
+    }
+
+    .now-clock {
+      font-size: 13px;
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hero-title {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+
+    .hero-sub {
+      font-size: 14.5px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+      max-width: 780px;
+    }
+
+    /* ปุ่มเลือกสนามสอบหลัก */
+    .target-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .target-tab {
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      padding: 8px 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .target-tab:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .target-tab.active {
+      background: #ffffff;
+      color: var(--tcas-navy);
+      border-color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    /* กล่องแสดงเวลานับถอยหลัง 6 หน่วย: ปี เดือน วัน ชั่วโมง นาที วินาที */
+    .main-countdown-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+    }
+
+    .active-exam-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .active-exam-name {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .active-exam-date {
+      font-size: 14px;
+      color: #bfdbfe;
+      margin-top: 2px;
+    }
+
+    .total-days-pill {
+      background: #fbbf24;
+      color: #111827;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 780px) {
+      .time-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 440px) {
+      .time-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .time-box {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 18px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .time-box.seconds-box {
+      background: rgba(37, 99, 235, 0.45);
+      border-color: rgba(147, 197, 253, 0.5);
+    }
+
+    .time-num {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+      color: #ffffff;
+    }
+
+    .time-label {
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .active-exam-footer {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 13px;
+      color: #e2e8f0;
+    }
+
+    .mytcas-link {
+      color: #93c5fd;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .mytcas-link:hover {
+      text-decoration: underline;
+    }
+
+    /* เนื้อหาด้านล่าง */
+    .main-wrap {
+      max-width: 1120px;
+      margin: -28px auto 52px;
+      padding: 0 20px;
+    }
+
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      margin-bottom: 24px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--tcas-navy);
+    }
+
+    .section-head p {
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: #374151;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .chip.active {
+      background: var(--tcas-navy);
+      color: #ffffff;
+      border-color: var(--tcas-navy);
+    }
+
+    /* การ์ดนับถอยหลังรายวิชา */
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .subject-card {
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+
+    .subject-card:hover {
+      transform: translateY(-2px);
+      border-color: #93c5fd;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+    }
+
+    .subject-card.selected {
+      border-color: var(--accent);
+      background: #f8fbff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .subject-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .group-badge {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .group-tgat { background: #dbeafe; color: #1d4ed8; }
+    .group-tpat { background: #fef3c7; color: #b45309; }
+    .group-alevel { background: #ccfbf1; color: #0f766e; }
+    .group-round { background: #ede9fe; color: #6d28d9; }
+
+    .pin-hint {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .subject-title {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.35;
+    }
+
+    .subject-datetime {
+      font-size: 13px;
+      color: #4b5563;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .mini-countdown {
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-cell strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+      color: #93c5fd;
+    }
+
+    .mini-cell span {
+      font-size: 10.5px;
+      color: #cbd5e1;
+    }
+
+    /* ตารางปฏิทินภาพรวม TCAS */
+    .timeline-table-wrap {
+      overflow-x: auto;
+    }
+
+    table.timeline-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    .timeline-table th,
+    .timeline-table td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .timeline-table th {
+      background: #f8fafc;
+      color: var(--tcas-navy);
+      font-weight: 800;
+    }
+
+    .timeline-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-upcoming {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .status-done {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <!-- แถบนำทาง -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <a class="brand" href="/">UniGO! <span>TCAS Timer</span></a>
+      <nav class="nav-links">
+        <a href="/">หน้าหลัก</a>
+        <a href="/universities.html">ข้อมูลมหาวิทยาลัย</a>
+        <a href="/exams.html">คลังแนวข้อสอบ</a>
+        <a href="/countdown.html" class="active">นับถอยหลังวันสอบ</a>
+        <a href="/chat.html">ห้องแชต</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero นับถอยหลังขนาดใหญ่แบบ Real-time -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-top-row">
+        <div class="tcas-badge">
+          <span class="live-dot"></span>
+          <span>REAL-TIME TCAS COUNTDOWN • อ้างอิงปฏิทินทางการ ทปอ. (myTCAS)</span>
+        </div>
+        <div class="now-clock" id="live-now-clock">เวลาปัจจุบัน: กำลังซิงก์เวลา...</div>
+      </div>
+
+      <h1 class="hero-title">⏳ นับถอยหลังสู่วันสอบ TCAS แบบวินาทีต่อวินาที</h1>
+      <p class="hero-sub">
+        คำนวณเวลาที่เหลือแบบละเอียดครบทั้ง <strong>ปี • เดือน • วัน • ชั่วโมง • นาที • วินาที</strong>
+        อ้างอิงตามวันและเวลาเปิดห้องสอบจริงของ ทปอ. (คลิกเลือกสนามสอบหรือรายวิชาด้านล่างเพื่อสลับตัวนับหลักได้ทันที)
+      </p>
+
+      <!-- ปุ่มลัดเลือกสนามสอบหลัก -->
+      <div class="target-selector" id="quick-target-tabs"></div>
+
+      <!-- กล่องตัวเลข 6 หน่วย -->
+      <div class="main-countdown-card">
+        <div class="active-exam-header">
+          <div>
+            <div class="active-exam-name" id="active-exam-name">กำลังโหลดข้อมูลวันสอบ...</div>
+            <div class="active-exam-date" id="active-exam-date">-</div>
+          </div>
+          <div class="total-days-pill" id="active-total-days">เหลืออีก - วัน</div>
+        </div>
+
+        <div class="time-grid">
+          <div class="time-box">
+            <div class="time-num" id="cd-years">0</div>
+            <div class="time-label">ปี (Years)</div>
+          </div>
+          <div class="time-box">
+            <div class="time-num" id="cd-months">0</div>
+            <div class="time-label">เดือน (Months)</div>
+          </div>
+          <div class="time-box">
+            <div class="time-num" id="cd-days">0</div>
+            <div class="time-label">วัน (Days)</div>
+          </div>
+          <div class="time-box">
+            <div class="time-num" id="cd-hours">00</div>
+            <div class="time-label">ชั่วโมง (Hours)</div>
+          </div>
+          <div class="time-box">
+            <div class="time-num" id="cd-minutes">00</div>
+            <div class="time-label">นาที (Minutes)</div>
+          </div>
+          <div class="time-box seconds-box">
+            <div class="time-num" id="cd-seconds">00</div>
+            <div class="time-label">วินาที (Seconds)</div>
+          </div>
+        </div>
+
+        <div class="active-exam-footer">
+          <span id="active-exam-note">หมายเหตุ: อ้างอิงเวลาเข้าห้องสอบตามประกาศ ทปอ. (เวลาประเทศไทย GMT+7)</span>
+          <a class="mytcas-link" href="https://www.mytcas.com/" target="_blank" rel="noopener noreferrer">
+            ตรวจสอบประกาศทางการที่ www.mytcas.com ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- เนื้อหาหลัก -->
+  <main class="main-wrap">
+    <!-- ส่วนที่ 1: นับถอยหลังแยกตามรายวิชา (TGAT / TPAT / A-Level / รอบ TCAS) -->
+    <section class="section-card">
+      <div class="section-head">
+        <div>
+          <h2>🎯 เวลานับถอยหลังแยกรายวิชาและกำหนดการสำคัญ (Real-time)</h2>
+          <p>คลิกที่การ์ดวิชาใดก็ได้เพื่อขึ้นจอใหญ่ด้านบน — ทุกใบเดินเวลาสดพร้อมกันแบบเรียลไทม์</p>
+        </div>
+        <a href="/exams.html" class="chip" style="text-decoration:none; color:var(--accent); border-color:#bfdbfe;">
+          📝 ไปหน้าคลังแนวข้อสอบ & Blueprint →
+        </a>
+      </div>
+
+      <div class="filter-chips" id="group-filter-chips">
+        <button type="button" class="chip active" data-group="all">ทั้งหมด</button>
+        <button type="button" class="chip" data-group="tgat">TGAT</button>
+        <button type="button" class="chip" data-group="tpat">TPAT 1–5</button>
+        <button type="button" class="chip" data-group="alevel">A-Level (รายวิชา)</button>
+        <button type="button" class="chip" data-group="round">รอบรับสมัคร & เตรียมสอบล่วงหน้า</button>
+      </div>
+
+      <div class="subject-grid" id="subject-grid"></div>
+    </section>
+
+    <!-- ส่วนที่ 2: ตารางสรุปปฏิทิน TCAS อ้างอิง myTCAS -->
+    <section class="section-card">
+      <div class="section-head">
+        <div>
+          <h2>📅 ตารางปฏิทินการสอบและการคัดเลือก TCAS (อ้างอิง myTCAS)</h2>
+          <p>สรุปวันรับสมัครสอบ วันพิมพ์บัตรที่นั่งสอบ วันสอบจริง และวันประกาศผล</p>
+        </div>
+      </div>
+
+      <div class="timeline-table-wrap">
+        <table class="timeline-table">
+          <thead>
+            <tr>
+              <th>รายการ / สนามสอบ</th>
+              <th>วัน-เวลาสอบจริง (ตามประกาศ ทปอ.)</th>
+              <th>ช่วงรับสมัคร / พิมพ์บัตรที่นั่งสอบ</th>
+              <th>เวลานับถอยหลัง (Real-time)</th>
+            </tr>
+          </thead>
+          <tbody id="timeline-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /**
+     * ตารางกำหนดการสอบ TCAS อ้างอิงประกาศทางการจาก ทปอ. (www.mytcas.com)
+     * ระบุเวลาเข้าห้องสอบจริงตามเวลาประเทศไทย (+07:00)
+     */
+    const TCAS_EVENTS = [
+      {
+        id: 'tpat3',
+        group: 'tpat',
+        badgeText: 'TPAT3',
+        quickTab: '🔧 สอบ TGAT / TPAT (30 ม.ค. 70)',
+        title: 'TPAT3 ความถนัดด้านวิทยาศาสตร์ เทคโนโลยี และวิศวกรรมศาสตร์',
+        targetIso: '2027-01-30T09:00:00+07:00',
+        dateText: 'วันเสาร์ที่ 30 มกราคม 2570 • เวลา 09:00 – 12:00 น.',
+        regInfo: 'สมัครสอบ 4–10 พ.ย. 69 | พิมพ์บัตร 7 ธ.ค. 69 – 1 ก.พ. 70',
+        note: 'สนามสอบแรกของรอบ TGAT/TPAT • ประกาศผลสอบ 28 ก.พ. 2570',
+      },
+      {
+        id: 'tgat',
+        group: 'tgat',
+        badgeText: 'TGAT 91–93',
+        quickTab: '📘 สอบ TGAT (30 ม.ค. 70 บ่าย)',
+        title: 'TGAT ความถนัดทั่วไป (TGAT1 อังกฤษ • TGAT2 คิดมีเหตุผล • TGAT3 สมรรถนะ)',
+        targetIso: '2027-01-30T13:00:00+07:00',
+        dateText: 'วันเสาร์ที่ 30 มกราคม 2570 • เวลา 13:00 – 16:00 น.',
+        regInfo: 'สมัครสอบ 4–10 พ.ย. 69 | พิมพ์บัตร 7 ธ.ค. 69 – 1 ก.พ. 70',
+        note: 'สอบรวม 3 พาร์ต (91, 92, 93) เวลา 3 ชั่วโมง • ประกาศผลสอบ 28 ก.พ. 2570',
+      },
+      {
+        id: 'tpat5',
+        group: 'tpat',
+        badgeText: 'TPAT5',
+        title: 'TPAT5 ความถนัดทางครุศาสตร์-ศึกษาศาสตร์',
+        targetIso: '2027-01-31T09:00:00+07:00',
+        dateText: 'วันอาทิตย์ที่ 31 มกราคม 2570 • เวลา 09:00 – 12:00 น.',
+        regInfo: 'สมัครสอบ 4–10 พ.ย. 69 | ประกาศผล 28 ก.พ. 70',
+        note: 'การทดสอบความถนัดวิชาชีพครู',
+      },
+      {
+        id: 'tpat2',
+        group: 'tpat',
+        badgeText: 'TPAT2',
+        title: 'TPAT2 ความถนัดทางศิลปกรรมศาสตร์ (ทัศนศิลป์ • ดนตรี • นาฏศิลป์)',
+        targetIso: '2027-01-31T13:00:00+07:00',
+        dateText: 'วันอาทิตย์ที่ 31 มกราคม 2570 • เวลา 13:00 – 16:00 น.',
+        regInfo: 'สมัครสอบ 4–10 พ.ย. 69 | ประกาศผล 28 ก.พ. 70',
+        note: 'การทดสอบความถนัดทางศิลปกรรมศาสตร์ 3 แขนง',
+      },
+      {
+        id: 'tpat4',
+        group: 'tpat',
+        badgeText: 'TPAT4',
+        title: 'TPAT4 ความถนัดทางสถาปัตยกรรมศาสตร์',
+        targetIso: '2027-02-01T09:00:00+07:00',
+        dateText: 'วันจันทร์ที่ 1 กุมภาพันธ์ 2570 • เวลา 09:00 – 12:00 น.',
+        regInfo: 'สมัครสอบ 4–10 พ.ย. 69 | ประกาศผล 28 ก.พ. 70',
+        note: 'วัดความรู้พื้นฐานสถาปัตยกรรมและมิติสัมพันธ์ 3 มิติ',
+      },
+      {
+        id: 'tpat1',
+        group: 'tpat',
+        badgeText: 'TPAT1 กสพท',
+        quickTab: '🩺 สอบ TPAT1 กสพท (13 ก.พ. 70)',
+        title: 'TPAT1 วิชาเฉพาะ กสพท (เชาวน์ปัญญา • จริยธรรม • เชื่อมโยง)',
+        targetIso: '2027-02-13T08:30:00+07:00',
+        dateText: 'วันเสาร์ที่ 13 กุมภาพันธ์ 2570 • เวลา 08:30 – 12:30 น.',
+        regInfo: 'สมัครผ่านระบบ กสพท | ใช้ยื่นแพทย์ ทันตะ เภสัช สัตวแพทย์',
+        note: 'จัดสอบโดย กสพท ร่วมกับระบบคัดเลือกกลาง myTCAS',
+      },
+      {
+        id: 'alevel-bio',
+        group: 'alevel',
+        badgeText: 'A-Level 66',
+        quickTab: '🧪 เริ่มสอบ A-Level (13 มี.ค. 70)',
+        title: 'A-Level 66 ชีววิทยา (เปิดสนามสอบ A-Level วันแรก)',
+        targetIso: '2027-03-13T08:30:00+07:00',
+        dateText: 'วันเสาร์ที่ 13 มีนาคม 2570 • เวลา 08:30 – 10:00 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'วิชาแรกของสนามสอบ A-Level ปีการศึกษา 2570',
+      },
+      {
+        id: 'alevel-phy',
+        group: 'alevel',
+        badgeText: 'A-Level 64',
+        title: 'A-Level 64 ฟิสิกส์',
+        targetIso: '2027-03-13T11:00:00+07:00',
+        dateText: 'วันเสาร์ที่ 13 มีนาคม 2570 • เวลา 11:00 – 12:30 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'เวลาสอบ 90 นาที (30 ข้อ)',
+      },
+      {
+        id: 'alevel-thai',
+        group: 'alevel',
+        badgeText: 'A-Level 81',
+        title: 'A-Level 81 ภาษาไทย',
+        targetIso: '2027-03-13T13:30:00+07:00',
+        dateText: 'วันเสาร์ที่ 13 มีนาคม 2570 • เวลา 13:30 – 15:00 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'เวลาสอบ 90 นาที (50 ข้อ)',
+      },
+      {
+        id: 'alevel-soc',
+        group: 'alevel',
+        badgeText: 'A-Level 70',
+        title: 'A-Level 70 สังคมศึกษา',
+        targetIso: '2027-03-13T15:30:00+07:00',
+        dateText: 'วันเสาร์ที่ 13 มีนาคม 2570 • เวลา 15:30 – 17:00 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'เวลาสอบ 90 นาที (50 ข้อ)',
+      },
+      {
+        id: 'alevel-math1',
+        group: 'alevel',
+        badgeText: 'A-Level 61',
+        quickTab: '📐 A-Level คณิต 1 / อังกฤษ / เคมี (14 มี.ค. 70)',
+        title: 'A-Level 61 คณิตศาสตร์ประยุกต์ 1 (พื้นฐาน + เพิ่มเติม)',
+        targetIso: '2027-03-14T08:30:00+07:00',
+        dateText: 'วันอาทิตย์ที่ 14 มีนาคม 2570 • เวลา 08:30 – 10:00 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'วิชาหลักสำหรับยื่นวิศวกรรมศาสตร์ วิทยาศาสตร์ แพทย์ และบริหารธุรกิจ',
+      },
+      {
+        id: 'alevel-eng',
+        group: 'alevel',
+        badgeText: 'A-Level 82',
+        title: 'A-Level 82 ภาษาอังกฤษ',
+        targetIso: '2027-03-14T11:00:00+07:00',
+        dateText: 'วันอาทิตย์ที่ 14 มีนาคม 2570 • เวลา 11:00 – 12:30 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'เวลาสอบ 90 นาที (80 ข้อ)',
+      },
+      {
+        id: 'alevel-chem',
+        group: 'alevel',
+        badgeText: 'A-Level 65',
+        title: 'A-Level 65 เคมี',
+        targetIso: '2027-03-14T13:30:00+07:00',
+        dateText: 'วันอาทิตย์ที่ 14 มีนาคม 2570 • เวลา 13:30 – 15:00 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'เวลาสอบ 90 นาที (35 ข้อ)',
+      },
+      {
+        id: 'alevel-math2',
+        group: 'alevel',
+        badgeText: 'A-Level 62',
+        title: 'A-Level 62 คณิตศาสตร์ประยุกต์ 2 (พื้นฐาน)',
+        targetIso: '2027-03-15T08:30:00+07:00',
+        dateText: 'วันจันทร์ที่ 15 มีนาคม 2570 • เวลา 08:30 – 10:00 น.',
+        regInfo: 'สมัครสอบ 14–20 ม.ค. 70 | พิมพ์บัตร 15 ก.พ. – 15 มี.ค. 70',
+        note: 'วันที่ 3 ของการสอบ A-Level (ต่อด้วยวิทย์ประยุกต์ และภาษาต่างประเทศ)',
+      },
+      {
+        id: 'tcas-round3',
+        group: 'round',
+        badgeText: 'TCAS รอบ 3',
+        quickTab: '🏆 สมัคร TCAS รอบ 3 Admission (6 พ.ค. 70)',
+        title: 'เปิดรับสมัคร TCAS รอบ 3 Admission พร้อมกันทั่วประเทศ (myTCAS)',
+        targetIso: '2027-05-06T09:00:00+07:00',
+        dateText: 'พฤหัสบดีที่ 6 – 12 พฤษภาคม 2570 • เริ่มเวลา 09:00 น.',
+        regInfo: 'เลือกคณะ/สาขาสูงสุด 10 อันดับ ที่ student.mytcas.com',
+        note: 'ใช้คะแนน TGAT / TPAT / A-Level และ GPAX ตามเกณฑ์แต่ละสาขา',
+      },
+      {
+        id: 'tcas-next-gen',
+        group: 'round',
+        badgeText: 'เตรียมสอบรุ่นถัดไป',
+        quickTab: '🔮 เตรียมสอบ TCAS รุ่นถัดไป (+1 ปี)',
+        title: 'สนามสอบ TGAT / TPAT รุ่นถัดไป (สำหรับน้อง ม.4–ม.5 เตรียมตัวล่วงหน้า)',
+        targetIso: '2028-01-29T09:00:00+07:00',
+        dateText: 'ปลายเดือนมกราคม 2571 • เวลา 09:00 น.',
+        regInfo: 'สำหรับวางแผนอ่านหนังสือและเก็บพอร์ตล่วงหน้าระดับปี',
+        note: 'ใช้ดูเวลานับถอยหลังระยะยาว (หน่วยปี / เดือน / วัน / ชั่วโมง / นาที / วินาที)',
+      },
+    ];
+
+    let selectedEventId = TCAS_EVENTS[0].id;
+    let selectedGroup = 'all';
+
+    // ฟังก์ชันบวกปีและเดือนตามปฏิทินจริงโดยไม่ล้นวันสิ้นเดือน
+    function addYearsMonths(baseDate, addY, addM) {
+      const y = baseDate.getFullYear() + addY;
+      const m = baseDate.getMonth() + addM;
+      const d = baseDate.getDate();
+      const maxDay = new Date(y, m + 1, 0).getDate();
+      return new Date(
+        y,
+        m,
+        Math.min(d, maxDay),
+        baseDate.getHours(),
+        baseDate.getMinutes(),
+        baseDate.getSeconds(),
+        baseDate.getMilliseconds()
+      );
+    }
+
+    /**
+     * คำนวณเวลาที่เหลือแบบละเอียดครบ 6 หน่วย: ปี, เดือน, วัน, ชั่วโมง, นาที, วินาที
+     */
+    function computeExactCountdown(now, targetDate) {
+      const diffMs = targetDate.getTime() - now.getTime();
+      if (diffMs <= 0) {
+        return {
+          expired: true,
+          years: 0,
+          months: 0,
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          totalDays: 0,
+        };
+      }
+
+      // 1. คำนวณจำนวนปีเต็ม
+      let years = targetDate.getFullYear() - now.getFullYear();
+      if (addYearsMonths(now, years, 0) > targetDate) {
+        years -= 1;
+      }
+      years = Math.max(0, years);
+      const afterYears = addYearsMonths(now, years, 0);
+
+      // 2. คำนวณจำนวนเดือนเต็มที่เหลือหลังจากหักปีแล้ว
+      let months =
+        (targetDate.getFullYear() - afterYears.getFullYear()) * 12 +
+        (targetDate.getMonth() - afterYears.getMonth());
+      if (addYearsMonths(afterYears, 0, months) > targetDate) {
+        months -= 1;
+      }
+      months = Math.max(0, months);
+      const afterMonths = addYearsMonths(afterYears, 0, months);
+
+      // 3. เวลาที่เหลือเป็น วัน, ชั่วโมง, นาที, วินาที
+      let remMs = Math.max(0, targetDate.getTime() - afterMonths.getTime());
+      const days = Math.floor(remMs / (1000 * 60 * 60 * 24));
+      remMs -= days * (1000 * 60 * 60 * 24);
+
+      const hours = Math.floor(remMs / (1000 * 60 * 60));
+      remMs -= hours * (1000 * 60 * 60);
+
+      const minutes = Math.floor(remMs / (1000 * 60));
+      remMs -= minutes * (1000 * 60);
+
+      const seconds = Math.floor(remMs / 1000);
+      const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      return {
+        expired: false,
+        years,
+        months,
+        days,
+        hours,
+        minutes,
+        seconds,
+        totalDays,
+      };
+    }
+
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function formatThaiNow(now) {
+      return now.toLocaleDateString('th-TH', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }) + ' • ' + now.toLocaleTimeString('th-TH', { hour12: false }) + ' น.';
+    }
+
+    // สร้างปุ่มเลือกสนามสอบหลักด้านบน
+    function renderQuickTabs() {
+      const quickEl = document.getElementById('quick-target-tabs');
+      const quickEvents = TCAS_EVENTS.filter((e) => e.quickTab);
+      quickEl.innerHTML = quickEvents
+        .map(
+          (ev) => `
+            <button
+              type="button"
+              class="target-tab ${ev.id === selectedEventId ? 'active' : ''}"
+              data-id="${ev.id}"
+            >${ev.quickTab}</button>
+          `
+        )
+        .join('');
+
+      quickEl.querySelectorAll('.target-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectMainEvent(btn.dataset.id);
+        });
+      });
+    }
+
+    // สร้างการ์ดรายวิชาทั้งหมด
+    function renderSubjectCards() {
+      const grid = document.getElementById('subject-grid');
+      const filtered =
+        selectedGroup === 'all'
+          ? TCAS_EVENTS
+          : TCAS_EVENTS.filter((e) => e.group === selectedGroup);
+
+      grid.innerHTML = filtered
+        .map(
+          (ev) => `
+            <article
+              class="subject-card ${ev.id === selectedEventId ? 'selected' : ''}"
+              data-card-id="${ev.id}"
+            >
+              <div class="subject-top">
+                <span class="group-badge group-${ev.group}">${ev.badgeText}</span>
+                <span class="pin-hint">${ev.id === selectedEventId ? '📌 แสดงอยู่บนจอหลัก' : 'คลิกเพื่อขึ้นจอหลัก'}</span>
+              </div>
+              <div class="subject-title">${ev.title}</div>
+              <div class="subject-datetime">
+                <span>🗓️ ${ev.dateText}</span>
+                <span style="color:var(--muted); font-size:12px;">📋 ${ev.regInfo}</span>
+              </div>
+              <div class="mini-countdown" data-mini-cd="${ev.id}">
+                <div class="mini-cell"><strong>0</strong><span>ปี</span></div>
+                <div class="mini-cell"><strong>0</strong><span>เดือน</span></div>
+                <div class="mini-cell"><strong>0</strong><span>วัน</span></div>
+                <div class="mini-cell"><strong>00</strong><span>ชม.</span></div>
+                <div class="mini-cell"><strong>00</strong><span>นาที</span></div>
+                <div class="mini-cell"><strong>00</strong><span>วินาที</span></div>
+              </div>
+            </article>
+          `
+        )
+        .join('');
+
+      grid.querySelectorAll('.subject-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          selectMainEvent(card.dataset.cardId, true);
+        });
+      });
+    }
+
+    // สร้างตารางสรุปปฏิทินด้านล่าง
+    function renderTimelineTable() {
+      const tbody = document.getElementById('timeline-tbody');
+      tbody.innerHTML = TCAS_EVENTS.map(
+        (ev) => `
+          <tr style="cursor:pointer;" data-row-id="${ev.id}">
+            <td>
+              <strong style="color:var(--tcas-navy);">${ev.title}</strong>
+            </td>
+            <td>${ev.dateText}</td>
+            <td style="color:var(--muted);">${ev.regInfo}</td>
+            <td>
+              <span class="status-pill status-upcoming" data-row-cd="${ev.id}">กำลังคำนวณ...</span>
+            </td>
+          </tr>
+        `
+      ).join('');
+
+      tbody.querySelectorAll('tr[data-row-id]').forEach((row) => {
+        row.addEventListener('click', () => {
+          selectMainEvent(row.dataset.rowId, true);
+        });
+      });
+    }
+
+    function selectMainEvent(eventId, scrollToTop = false) {
+      selectedEventId = eventId;
+      renderQuickTabs();
+      renderSubjectCards();
+      tickAllCountdowns();
+      if (scrollToTop) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // อัปเดตตัวเลขทุกจุดแบบ Real-time
+    function tickAllCountdowns() {
+      const now = new Date();
+      document.getElementById('live-now-clock').textContent = `เวลาปัจจุบัน: ${formatThaiNow(now)}`;
+
+      // 1. อัปเดตจอหลักด้านบน
+      const mainEv = TCAS_EVENTS.find((e) => e.id === selectedEventId) || TCAS_EVENTS[0];
+      const mainParts = computeExactCountdown(now, new Date(mainEv.targetIso));
+
+      document.getElementById('active-exam-name').textContent = mainEv.title;
+      document.getElementById('active-exam-date').textContent = `🗓️ กำหนดการ: ${mainEv.dateText}`;
+      document.getElementById('active-exam-note').textContent = `💡 ${mainEv.note} (${mainEv.regInfo})`;
+      document.getElementById('active-total-days').textContent = mainParts.expired
+        ? 'ถึงเวลาสอบแล้ว / สอบเสร็จสิ้น'
+        : `รวมเหลือเวลาอีก ${mainParts.totalDays.toLocaleString()} วัน`;
+
+      document.getElementById('cd-years').textContent = mainParts.years;
+      document.getElementById('cd-months').textContent = mainParts.months;
+      document.getElementById('cd-days').textContent = mainParts.days;
+      document.getElementById('cd-hours').textContent = pad2(mainParts.hours);
+      document.getElementById('cd-minutes').textContent = pad2(mainParts.minutes);
+      document.getElementById('cd-seconds').textContent = pad2(mainParts.seconds);
+
+      // 2. อัปเดตการ์ดรายวิชาทั้งหมด + ตารางด้านล่าง
+      for (const ev of TCAS_EVENTS) {
+        const parts = computeExactCountdown(now, new Date(ev.targetIso));
+
+        const miniEl = document.querySelector(`[data-mini-cd="${ev.id}"]`);
+        if (miniEl) {
+          miniEl.innerHTML = `
+            <div class="mini-cell"><strong>${parts.years}</strong><span>ปี</span></div>
+            <div class="mini-cell"><strong>${parts.months}</strong><span>เดือน</span></div>
+            <div class="mini-cell"><strong>${parts.days}</strong><span>วัน</span></div>
+            <div class="mini-cell"><strong>${pad2(parts.hours)}</strong><span>ชม.</span></div>
+            <div class="mini-cell"><strong>${pad2(parts.minutes)}</strong><span>นาที</span></div>
+            <div class="mini-cell"><strong>${pad2(parts.seconds)}</strong><span>วินาที</span></div>
+          `;
+        }
+
+        const rowEl = document.querySelector(`[data-row-cd="${ev.id}"]`);
+        if (rowEl) {
+          if (parts.expired) {
+            rowEl.className = 'status-pill status-done';
+            rowEl.textContent = 'ถึงกำหนดการแล้ว';
+          } else {
+            rowEl.className = 'status-pill status-upcoming';
+            rowEl.textContent = `${parts.years}ปี ${parts.months}ด. ${parts.days}วัน ${pad2(parts.hours)}:${pad2(parts.minutes)}:${pad2(parts.seconds)}`;
+          }
+        }
+      }
+    }
+
+    // ตัวกรองหมวดหมู่การ์ดรายวิชา
+    document.querySelectorAll('#group-filter-chips .chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedGroup = btn.dataset.group;
+        document
+          .querySelectorAll('#group-filter-chips .chip')
+          .forEach((c) => c.classList.remove('active'));
+        btn.classList.add('active');
+        renderSubjectCards();
+        tickAllCountdowns();
+      });
+    });
+
+    // เริ่มทำงานทันทีและตั้งเวลาเดินทุก 250ms เพื่อให้วินาทีตรงกับนาฬิกาเครื่องแบบไม่ดีเลย์
+    renderQuickTabs();
+    renderSubjectCards();
+    renderTimelineTable();
+    tickAllCountdowns();
+    setInterval(tickAllCountdowns, 250);
+  </script>
+</body>
+</html>
+
